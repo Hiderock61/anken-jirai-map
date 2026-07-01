@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI副業・フリーランス地雷地図 v0.1</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">v0.1 / ルール判定版</p>
+      <h1>AI副業・フリーランス<br>地雷地図</h1>
+      <p class="lead">広告文や案件文を貼って、「仕事なのか」「講座入口なのか」「確認不足なのか」を分解する初心者用の赤札アプリ。</p>
+    </header>
+
+    <section class="card input-card" aria-labelledby="input-title">
+      <div class="section-head">
+        <h2 id="input-title">1. 広告文・案件文を貼る</h2>
+        <button id="sampleBtn" class="ghost-btn" type="button">サンプル投入</button>
+      </div>
+      <textarea id="adText" placeholder="例：未経験OK！AIで月収50万円。スマホだけで簡単。LINE登録後に詳細説明します。初期サポート費用あり。"></textarea>
+      <div class="quick-flags" aria-label="追加チェック項目">
+        <label><input type="checkbox" value="initialCost"> 初期費用・サポート費用がある</label>
+        <label><input type="checkbox" value="lineFlow"> LINE/DMへ誘導される</label>
+        <label><input type="checkbox" value="unclearWork"> 仕事内容が曖昧</label>
+        <label><input type="checkbox" value="deliverableClear"> 納品物が明確</label>
+        <label><input type="checkbox" value="contractClear"> 契約・報酬条件が明確</label>
+      </div>
+      <button id="checkBtn" class="main-btn" type="button">赤札チェックする</button>
+    </section>
+
+    <section id="resultCard" class="card result-card is-hidden" aria-live="polite">
+      <p class="eyebrow">明智判定 😲</p>
+      <h2 id="resultTitle">判定結果</h2>
+      <div class="meter" aria-hidden="true">
+        <div id="meterFill" class="meter-fill"></div>
+      </div>
+      <p id="resultSummary" class="result-summary"></p>
+
+      <div class="result-grid">
+        <div>
+          <h3>拾った赤札</h3>
+          <ul id="redFlags" class="tag-list"></ul>
+        </div>
+        <div>
+          <h3>良い材料</h3>
+          <ul id="greenFlags" class="tag-list good"></ul>
+        </div>
+      </div>
+
+      <div class="next-box">
+        <h3>次に確認すること</h3>
+        <ol id="nextQuestions"></ol>
+      </div>
+
+      <div class="copy-box">
+        <h3>AIに渡す質問文</h3>
+        <textarea id="promptOut" readonly></textarea>
+        <button id="copyBtn" class="ghost-btn" type="button">コピー</button>
+        <p id="copyToast" class="toast" role="status"></p>
+      </div>
+    </section>
+
+    <section class="card mini-manual">
+      <h2>このアプリの使い方©️</h2>
+      <ol>
+        <li>広告文・案件文を貼る。</li>
+        <li>気になる条件にチェックを入れる。</li>
+        <li>「仕事っぽい / 講座入口っぽい / 要確認」を見る。</li>
+        <li>AI質問文をコピーして、明智君・Gemini・Claudeなどに投げる。</li>
+      </ol>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
