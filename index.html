@@ -1,75 +1,97 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI副業・フリーランス地雷地図 v0.1</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>フリーランス入口マップ v0.2</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
-      <p class="eyebrow">v0.1 / ルール判定版</p>
-      <h1>AI副業・フリーランス<br>地雷地図</h1>
-      <p class="lead">広告文や案件文を貼って、「仕事なのか」「講座入口なのか」「確認不足なのか」を分解する初心者用の赤札アプリ。</p>
+      <p class="version">v0.2｜入口構造分解版</p>
+      <h1>フリーランス<br>入口マップ©️</h1>
+      <p class="lead">募集・講座・コミュニティを貼って、「これは自分にとって何の入口か」を分解する。</p>
     </header>
 
-    <section class="card input-card" aria-labelledby="input-title">
+    <section class="card">
       <div class="section-head">
-        <h2 id="input-title">1. 広告文・案件文を貼る</h2>
-        <button id="sampleBtn" class="ghost-btn" type="button">サンプル投入</button>
+        <div>
+          <p class="step">STEP 1</p>
+          <h2>見つけた文を貼る</h2>
+        </div>
+        <button id="sampleBtn" class="sub-btn" type="button">サンプル</button>
       </div>
-      <textarea id="adText" placeholder="例：未経験OK！AIで月収50万円。スマホだけで簡単。LINE登録後に詳細説明します。初期サポート費用あり。"></textarea>
-      <div class="quick-flags" aria-label="追加チェック項目">
-        <label><input type="checkbox" value="initialCost"> 初期費用・サポート費用がある</label>
-        <label><input type="checkbox" value="lineFlow"> LINE/DMへ誘導される</label>
-        <label><input type="checkbox" value="unclearWork"> 仕事内容が曖昧</label>
-        <label><input type="checkbox" value="deliverableClear"> 納品物が明確</label>
-        <label><input type="checkbox" value="contractClear"> 契約・報酬条件が明確</label>
-      </div>
-      <button id="checkBtn" class="main-btn" type="button">赤札チェックする</button>
+
+      <textarea id="sourceText" rows="9" placeholder="例：AIを使ったWeb制作メンバー募集。Discordで週1回勉強会を行い、共同制作物はGitHubで公開します。報酬はありませんが、ポートフォリオ掲載可能です。"></textarea>
+
+      <details class="details-box">
+        <summary>文章だけでは分からない条件を追加</summary>
+        <div class="checks">
+          <label><input type="checkbox" value="paidByUser"> 自分が参加費・受講料を払う</label>
+          <label><input type="checkbox" value="paidToUser"> 自分が報酬を受け取る</label>
+          <label><input type="checkbox" value="portfolio"> 成果物を実績として公開できる</label>
+          <label><input type="checkbox" value="community"> Discord・GitHubなど共同の場がある</label>
+          <label><input type="checkbox" value="deliverable"> 作る物・納品物が決まっている</label>
+          <label><input type="checkbox" value="deadline"> 納期・作業期間が決まっている</label>
+          <label><input type="checkbox" value="rightsUnclear"> 制作物の権利や利用範囲が不明</label>
+          <label><input type="checkbox" value="unlimitedRevision"> 修正回数・作業量に上限がない</label>
+        </div>
+      </details>
+
+      <button id="analyzeBtn" class="main-btn" type="button">入口を分解する</button>
     </section>
 
-    <section id="resultCard" class="card result-card is-hidden" aria-live="polite">
-      <p class="eyebrow">明智判定 😲</p>
-      <h2 id="resultTitle">判定結果</h2>
-      <div class="meter" aria-hidden="true">
-        <div id="meterFill" class="meter-fill"></div>
+    <section id="resultCard" class="card result-card hidden" aria-live="polite">
+      <p class="step">STEP 2｜分解結果</p>
+      <div class="primary-result">
+        <p class="result-label">主な入口</p>
+        <h2 id="primaryType">情報不足</h2>
+        <p id="primarySummary" class="summary"></p>
       </div>
-      <p id="resultSummary" class="result-summary"></p>
 
-      <div class="result-grid">
+      <div id="scoreList" class="score-list"></div>
+
+      <section class="split-panel">
         <div>
-          <h3>拾った赤札</h3>
-          <ul id="redFlags" class="tag-list"></ul>
+          <h3>この入口で得るもの</h3>
+          <ul id="gainList"></ul>
         </div>
         <div>
-          <h3>良い材料</h3>
-          <ul id="greenFlags" class="tag-list good"></ul>
+          <h3>消費・確認するもの</h3>
+          <ul id="costList"></ul>
         </div>
-      </div>
+      </section>
 
-      <div class="next-box">
-        <h3>次に確認すること</h3>
-        <ol id="nextQuestions"></ol>
-      </div>
+      <section class="evidence-box">
+        <h3>判定に使った材料</h3>
+        <div id="evidenceTags" class="tags"></div>
+      </section>
 
-      <div class="copy-box">
-        <h3>AIに渡す質問文</h3>
-        <textarea id="promptOut" readonly></textarea>
-        <button id="copyBtn" class="ghost-btn" type="button">コピー</button>
-        <p id="copyToast" class="toast" role="status"></p>
-      </div>
+      <section class="next-box">
+        <p class="step">STEP 3｜次の動作</p>
+        <h3 id="nextTitle"></h3>
+        <p id="nextText"></p>
+        <ol id="questionList"></ol>
+      </section>
+
+      <section class="handoff-box">
+        <p class="handoff-kicker">入口で止まらず、仕事の形へ</p>
+        <h3>フリーランス装備庫へ渡す</h3>
+        <p id="handoffText">入口の種類に合わせて、装備庫で次の作業を始めます。</p>
+        <a id="equipmentLink" class="equipment-btn" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener">装備庫を開く</a>
+      </section>
+
+      <button id="resetBtn" class="sub-btn wide" type="button">別の入口を調べる</button>
     </section>
 
-    <section class="card mini-manual">
-      <h2>このアプリの使い方©️</h2>
-      <ol>
-        <li>広告文・案件文を貼る。</li>
-        <li>気になる条件にチェックを入れる。</li>
-        <li>「仕事っぽい / 講座入口っぽい / 要確認」を見る。</li>
-        <li>AI質問文をコピーして、明智君・Gemini・Claudeなどに投げる。</li>
-      </ol>
+    <section class="card map-card">
+      <p class="step">このアプリの地図</p>
+      <div class="flow">
+        <span>募集文</span><b>→</b><span>入口を分類</span><b>→</b><span>得る物と消費を確認</span><b>→</b><span>装備庫で実装</span>
+      </div>
+      <p class="small-note">断罪するアプリではありません。同じ募集でも、費用・報酬・公開権・作業条件によって入口は変わります。</p>
     </section>
   </main>
   <script src="app.js"></script>
