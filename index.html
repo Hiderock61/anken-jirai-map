@@ -4,94 +4,115 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
-  <title>フリーランス入口マップ v0.2</title>
+  <title>フリーランス入口マップ v0.3</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
-      <p class="version">v0.2｜入口構造分解版</p>
+      <p class="version">v0.3｜技能差分発見版</p>
       <h1>フリーランス<br>入口マップ©️</h1>
-      <p class="lead">募集・講座・コミュニティを貼って、「これは自分にとって何の入口か」を分解する。</p>
+      <p class="lead">募集文を貼って、入口タイプ・必要技術・今の装備との差分・次に学ぶ一つを整理する。</p>
     </header>
 
     <section class="card">
       <div class="section-head">
         <div>
           <p class="step">STEP 1</p>
-          <h2>見つけた文を貼る</h2>
+          <h2>募集文を貼る</h2>
         </div>
         <button id="sampleBtn" class="sub-btn" type="button">サンプル</button>
       </div>
+      <textarea id="sourceText" rows="9" placeholder="例：HTML/CSS/JavaScriptでスマホ向け予約フォームを作ってください。入力内容を保存し、GitHub Pagesで公開URLを納品。"></textarea>
+    </section>
 
-      <textarea id="sourceText" rows="9" placeholder="例：AIを使ったWeb制作メンバー募集。Discordで週1回勉強会を行い、共同制作物はGitHubで公開します。報酬はありませんが、ポートフォリオ掲載可能です。"></textarea>
-
-      <details class="details-box">
-        <summary>文章だけでは分からない条件を追加</summary>
-        <div class="checks">
-          <label><input type="checkbox" value="paidByUser"> 自分が参加費・受講料を払う</label>
-          <label><input type="checkbox" value="paidToUser"> 自分が報酬を受け取る</label>
-          <label><input type="checkbox" value="portfolio"> 成果物を実績として公開できる</label>
-          <label><input type="checkbox" value="community"> Discord・GitHubなど共同の場がある</label>
-          <label><input type="checkbox" value="deliverable"> 作る物・納品物が決まっている</label>
-          <label><input type="checkbox" value="deadline"> 納期・作業期間が決まっている</label>
-          <label><input type="checkbox" value="rightsUnclear"> 制作物の権利や利用範囲が不明</label>
-          <label><input type="checkbox" value="unlimitedRevision"> 修正回数・作業量に上限がない</label>
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="step">STEP 2</p>
+          <h2>必要技術を選ぶ</h2>
         </div>
-      </details>
+        <button id="suggestBtn" class="sub-btn" type="button">文章から候補</button>
+      </div>
+      <p class="small-note">募集文から読める範囲で選ぶ。自動判定に任せすぎず、ヒデちゃんの目で確認する入口だよう。</p>
+      <div id="requiredSkills" class="skill-grid"></div>
+    </section>
 
-      <button id="analyzeBtn" class="main-btn" type="button">入口を分解する</button>
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="step">STEP 3</p>
+          <h2>現在の装備</h2>
+        </div>
+        <button id="resetGearBtn" class="sub-btn" type="button">初期装備に戻す</button>
+      </div>
+      <p class="small-note">動画を見ただけは装備にしない。動くものを作ったら「試作済み」、人に渡せるなら「納品可能」。</p>
+      <div id="currentSkills" class="gear-list"></div>
+    </section>
+
+    <section class="card action-card">
+      <button id="analyzeBtn" class="main-btn" type="button">技能差分を出す</button>
     </section>
 
     <section id="resultCard" class="card result-card hidden" aria-live="polite">
-      <p class="step">STEP 2｜分解結果</p>
+      <p class="step">STEP 4｜分解結果</p>
       <div class="primary-result">
-        <p class="result-label">主な入口</p>
-        <h2 id="primaryType">情報不足</h2>
-        <p id="primarySummary" class="summary"></p>
+        <p class="result-label">入口タイプ</p>
+        <h2 id="entryType">情報不足</h2>
+        <p id="entrySummary" class="summary"></p>
       </div>
-
-      <div id="scoreList" class="score-list"></div>
 
       <section class="split-panel">
         <div>
-          <h3>この入口で得るもの</h3>
-          <ul id="gainList"></ul>
+          <h3>今使える装備</h3>
+          <ul id="matchedList"></ul>
         </div>
         <div>
-          <h3>消費・確認するもの</h3>
-          <ul id="costList"></ul>
+          <h3>足りない技術</h3>
+          <ul id="missingList"></ul>
         </div>
       </section>
 
-      <section class="evidence-box">
-        <h3>判定に使った材料</h3>
-        <div id="evidenceTags" class="tags"></div>
+      <section class="mission-box">
+        <p class="step">STEP 5｜次に学ぶ一つ</p>
+        <h3 id="missionTitle"></h3>
+        <dl class="mission-detail">
+          <dt>なぜ必要か</dt>
+          <dd id="missionWhy"></dd>
+          <dt>作るもの</dt>
+          <dd id="missionBuild"></dd>
+          <dt>完成条件</dt>
+          <dd><ul id="missionDone"></ul></dd>
+          <dt>装備登録</dt>
+          <dd id="missionGear"></dd>
+        </dl>
       </section>
 
       <section class="next-box">
-        <p class="step">STEP 3｜次の動作</p>
-        <h3 id="nextTitle"></h3>
-        <p id="nextText"></p>
-        <ol id="questionList"></ol>
+        <h3>次の行動</h3>
+        <p id="nextAction"></p>
       </section>
 
       <section class="handoff-box">
-        <p class="handoff-kicker">入口で止まらず、仕事の形へ</p>
-        <h3>フリーランス装備庫へ渡す</h3>
-        <p id="handoffText">入口の種類に合わせて、装備庫で次の作業を始めます。</p>
-        <a id="equipmentLink" class="equipment-btn" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener">装備庫を開く</a>
+        <p class="handoff-kicker">入口から装備庫へ</p>
+        <h3>案件カード</h3>
+        <textarea id="caseCard" rows="11" readonly></textarea>
+        <div class="button-row">
+          <button id="copyCardBtn" class="main-btn small" type="button">案件カードをコピー</button>
+          <a id="equipmentLink" class="equipment-btn" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener">装備庫を開く</a>
+        </div>
+        <p id="copyStatus" class="small-note"></p>
       </section>
 
-      <button id="resetBtn" class="sub-btn wide" type="button">別の入口を調べる</button>
+      <button id="resetBtn" class="sub-btn wide" type="button">別の募集を調べる</button>
     </section>
 
     <section class="card map-card">
       <p class="step">このアプリの地図</p>
       <div class="flow">
-        <span>募集文</span><b>→</b><span>入口を分類</span><b>→</b><span>得る物と消費を確認</span><b>→</b><span>装備庫で実装</span>
+        <span>募集文</span><b>→</b><span>必要技術</span><b>→</b><span>差分</span><b>→</b><span>学習ミッション</span><b>→</b><span>装備庫</span>
       </div>
-      <p class="small-note">断罪するアプリではありません。同じ募集でも、費用・報酬・公開権・作業条件によって入口は変わります。</p>
+      <p class="small-note">目的は案件を眺めることではなく、できる仕事と次に増やす技能を分けること。</p>
     </section>
   </main>
   <script src="app.js"></script>
