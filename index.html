@@ -4,117 +4,145 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
-  <title>フリーランス入口マップ v0.3</title>
+  <title>フリーランス入口アプリ v0.4</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
-      <p class="version">v0.3｜技能差分発見版</p>
+      <p class="version">フリーランス入口アプリ v0.4｜募集探索タブ追加版</p>
       <h1>フリーランス<br>入口マップ©️</h1>
-      <p class="lead">募集文を貼って、入口タイプ・必要技術・今の装備との差分・次に学ぶ一つを整理する。</p>
+      <p class="lead">募集を探す場所と検索語を持ち、見つけた募集を技能差分と「次に学ぶ一つ」へ渡す司令台。</p>
     </header>
 
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <p class="step">STEP 1</p>
-          <h2>募集文を貼る</h2>
-        </div>
-        <button id="sampleBtn" class="sub-btn" type="button">サンプル</button>
-      </div>
-      <textarea id="sourceText" rows="9" placeholder="例：HTML/CSS/JavaScriptでスマホ向け予約フォームを作ってください。入力内容を保存し、GitHub Pagesで公開URLを納品。"></textarea>
-    </section>
+    <nav class="tab-bar" aria-label="入口アプリの機能">
+      <button class="tab-btn active" type="button" data-tab="search" aria-selected="true">🔎 探す</button>
+      <button class="tab-btn" type="button" data-tab="analyze" aria-selected="false">🧭 分解する</button>
+    </nav>
 
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <p class="step">STEP 2</p>
-          <h2>必要技術を選ぶ</h2>
-        </div>
-        <button id="suggestBtn" class="sub-btn" type="button">文章から候補</button>
-      </div>
-      <p class="small-note">募集文から読める範囲で選ぶ。自動判定に任せすぎず、ヒデちゃんの目で確認する入口だよう。</p>
-      <div id="requiredSkills" class="skill-grid"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <p class="step">STEP 3</p>
-          <h2>現在の装備</h2>
-        </div>
-        <button id="resetGearBtn" class="sub-btn" type="button">初期装備に戻す</button>
-      </div>
-      <p class="small-note">動画を見ただけは装備にしない。動くものを作ったら「試作済み」、人に渡せるなら「納品可能」。</p>
-      <div id="currentSkills" class="gear-list"></div>
-    </section>
-
-    <section class="card action-card">
-      <button id="analyzeBtn" class="main-btn" type="button">技能差分を出す</button>
-    </section>
-
-    <section id="resultCard" class="card result-card hidden" aria-live="polite">
-      <p class="step">STEP 4｜分解結果</p>
-      <div class="primary-result">
-        <p class="result-label">入口タイプ</p>
-        <h2 id="entryType">情報不足</h2>
-        <p id="entrySummary" class="summary"></p>
-      </div>
-
-      <section class="split-panel">
-        <div>
-          <h3>今使える装備</h3>
-          <ul id="matchedList"></ul>
-        </div>
-        <div>
-          <h3>足りない技術</h3>
-          <ul id="missingList"></ul>
-        </div>
+    <section id="searchTab" class="tab-panel">
+      <section class="card intro-card">
+        <p class="step">募集探索司令台</p>
+        <h2>目的から検索を始める</h2>
+        <p class="small-note">検索結果は外部サイトで開きます。良さそうな募集を見つけたら、下の募集メモへ雑に貼ってください。</p>
       </section>
 
-      <section class="mission-box">
-        <p class="step">STEP 5｜次に学ぶ一つ</p>
-        <h3 id="missionTitle"></h3>
-        <dl class="mission-detail">
-          <dt>なぜ必要か</dt>
-          <dd id="missionWhy"></dd>
-          <dt>作るもの</dt>
-          <dd id="missionBuild"></dd>
-          <dt>完成条件</dt>
-          <dd><ul id="missionDone"></ul></dd>
-          <dt>装備登録</dt>
-          <dd id="missionGear"></dd>
-        </dl>
+      <div id="searchSections"></div>
+
+      <section class="card safety-card">
+        <p class="step">危険ワード辞書</p>
+        <h2>仕事の中身を確認する言葉</h2>
+        <p class="small-note">次の言葉が募集文に含まれる場合は、仕事ではなく勧誘・教材・高額サポート入口の可能性を確認します。</p>
+        <ul class="check-list">
+          <li>初心者歓迎 簡単 コピペ</li>
+          <li>未経験 高収入 継続</li>
+          <li>スマホでポチポチ</li>
+          <li>マニュアル通りにタップ</li>
+          <li>LINE 副業 高収入</li>
+        </ul>
+        <p class="safety-note">この言葉があるから即アウトではありません。仕事内容・報酬・費用・納品物の確認が必要です。</p>
       </section>
 
-      <section class="next-box">
-        <h3>次の行動</h3>
-        <p id="nextAction"></p>
+      <section class="card memo-card">
+        <p class="step">見つけた募集メモ</p>
+        <h2>募集を雑に置く</h2>
+        <p class="small-note">分かる項目だけで大丈夫です。入力内容は、この端末で保存できる場合だけ自動保存します。</p>
+        <form id="jobMemoForm" class="memo-form">
+          <label>掲載場所<input name="platform" type="text" placeholder="例：クラウドワークス"></label>
+          <label>募集タイトル<input name="title" type="text" placeholder="例：既存LPのスマホ修正"></label>
+          <div class="memo-pair">
+            <label>報酬<input name="reward" type="text" placeholder="例：5,000円"></label>
+            <label>納期<input name="deadline" type="text" placeholder="例：8月5日"></label>
+          </div>
+          <label>必要そうな技術<input name="skills" type="text" placeholder="例：HTML、CSS、レスポンシブ"></label>
+          <label>本文メモ<textarea name="body" rows="7" placeholder="募集本文や気になった条件を貼る"></textarea></label>
+          <label>URL<input name="url" type="url" inputmode="url" placeholder="https://..."></label>
+          <button id="handoffBtn" class="main-btn" type="submit">この募集を分解する</button>
+          <p id="memoStatus" class="small-note status-line" aria-live="polite"></p>
+        </form>
       </section>
-
-      <section class="handoff-box">
-        <p class="handoff-kicker">入口から装備庫へ</p>
-        <h3>案件カード</h3>
-        <textarea id="caseCard" rows="11" readonly></textarea>
-        <div class="button-row">
-          <button id="copyCardBtn" class="main-btn small" type="button">案件カードをコピー</button>
-          <a id="equipmentLink" class="equipment-btn" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener">装備庫を開く</a>
-        </div>
-        <p id="copyStatus" class="small-note"></p>
-      </section>
-
-      <button id="resetBtn" class="sub-btn wide" type="button">別の募集を調べる</button>
     </section>
 
-    <section class="card map-card">
-      <p class="step">このアプリの地図</p>
-      <div class="flow">
-        <span>募集文</span><b>→</b><span>必要技術</span><b>→</b><span>差分</span><b>→</b><span>学習ミッション</span><b>→</b><span>装備庫</span>
-      </div>
-      <p class="small-note">目的は案件を眺めることではなく、できる仕事と次に増やす技能を分けること。</p>
+    <section id="analyzeTab" class="tab-panel hidden">
+      <section class="card">
+        <div class="section-head">
+          <div><p class="step">STEP 1</p><h2>募集文を貼る</h2></div>
+          <button id="sampleBtn" class="sub-btn" type="button">サンプル</button>
+        </div>
+        <textarea id="sourceText" rows="9" placeholder="例：HTML/CSS/JavaScriptでスマホ向け予約フォームを作ってください。"></textarea>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div><p class="step">STEP 2</p><h2>必要技術を選ぶ</h2></div>
+          <button id="suggestBtn" class="sub-btn" type="button">文章から候補</button>
+        </div>
+        <p class="small-note">募集文から読める範囲で選び、最後は自分の目で確認します。</p>
+        <div id="requiredSkills" class="skill-grid"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div><p class="step">STEP 3</p><h2>現在の装備</h2></div>
+          <button id="resetGearBtn" class="sub-btn" type="button">初期装備に戻す</button>
+        </div>
+        <p class="small-note">動画を見ただけは装備にしない。動くものを作ったら「試作済み」、人に渡せるなら「納品可能」。</p>
+        <div id="currentSkills" class="gear-list"></div>
+      </section>
+
+      <section class="card action-card">
+        <button id="analyzeBtn" class="main-btn" type="button">技能差分を出す</button>
+      </section>
+
+      <section id="resultCard" class="card result-card hidden" aria-live="polite">
+        <p class="step">STEP 4｜分解結果</p>
+        <div class="primary-result">
+          <p class="result-label">入口タイプ</p>
+          <h2 id="entryType">情報不足</h2>
+          <p id="entrySummary" class="summary"></p>
+        </div>
+        <section class="split-panel">
+          <div><h3>今使える装備</h3><ul id="matchedList"></ul></div>
+          <div><h3>足りない技術</h3><ul id="missingList"></ul></div>
+        </section>
+        <section class="mission-box">
+          <p class="step">STEP 5｜次に学ぶ一つ</p>
+          <h3 id="missionTitle"></h3>
+          <dl class="mission-detail">
+            <dt>なぜ必要か</dt><dd id="missionWhy"></dd>
+            <dt>作るもの</dt><dd id="missionBuild"></dd>
+            <dt>完成条件</dt><dd><ul id="missionDone"></ul></dd>
+            <dt>装備登録</dt><dd id="missionGear"></dd>
+          </dl>
+        </section>
+        <section class="next-box"><h3>次の行動</h3><p id="nextAction"></p></section>
+        <section class="handoff-box">
+          <p class="handoff-kicker">入口から装備庫へ</p>
+          <h3>案件カード</h3>
+          <textarea id="caseCard" rows="11" readonly></textarea>
+          <div class="button-row">
+            <button id="copyCardBtn" class="main-btn small" type="button">案件カードをコピー</button>
+            <a id="equipmentLink" class="equipment-btn" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener noreferrer">装備庫を開く</a>
+          </div>
+          <p id="copyStatus" class="small-note"></p>
+        </section>
+        <button id="resetBtn" class="sub-btn wide" type="button">別の募集を調べる</button>
+      </section>
+
+      <section class="card map-card">
+        <p class="step">このアプリの地図</p>
+        <div class="flow"><span>募集探索</span><b>→</b><span>募集メモ</span><b>→</b><span>必要技術</span><b>→</b><span>差分</span><b>→</b><span>学習ミッション</span><b>→</b><span>装備庫</span></div>
+      </section>
     </section>
   </main>
+  <div id="copyFallback" class="copy-fallback hidden" role="dialog" aria-modal="true" aria-labelledby="copyFallbackTitle">
+    <div class="copy-dialog">
+      <h2 id="copyFallbackTitle">検索語を手動コピー</h2>
+      <p class="small-note">長押ししてコピーしてください。</p>
+      <textarea id="fallbackText" rows="4" readonly></textarea>
+      <button id="closeFallbackBtn" class="main-btn" type="button">閉じる</button>
+    </div>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
