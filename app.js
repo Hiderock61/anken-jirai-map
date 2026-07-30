@@ -73,6 +73,8 @@ let sampleIndex = 0;
 
 const sourceText=$('#sourceText'),requiredSkillsBox=$('#requiredSkills'),currentSkillsBox=$('#currentSkills'),resultCard=$('#resultCard'),jobMemoForm=$('#jobMemoForm'),memoStatus=$('#memoStatus');
 const entryType=$('#entryType'),entrySummary=$('#entrySummary'),matchedList=$('#matchedList'),missingList=$('#missingList'),missionTitle=$('#missionTitle'),missionWhy=$('#missionWhy'),missionBuild=$('#missionBuild'),missionDone=$('#missionDone'),missionGear=$('#missionGear'),nextAction=$('#nextAction'),caseCard=$('#caseCard'),copyStatus=$('#copyStatus');
+const workContent=$('#workContent'),deliverables=$('#deliverables'),clientQuestions=$('#clientQuestions'),checkCriteria=$('#checkCriteria'),cardStatus=$('#cardStatus');
+let latestAnalysis=null;
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
 function showTab(name,scroll=true){
@@ -122,6 +124,45 @@ function suggestSkills(){const text=sourceText.value.toLowerCase();setRequired([
 function classify(text,required,missing){const value=text.toLowerCase();if(['講座','スクール','受講料','教材'].some(word=>value.includes(word)))return['学習入口','仕事ではなく、学ぶ・買う・参加する入口が強い。成果物が残るか確認。'];if(['報酬なし','無償'].some(word=>value.includes(word))&&['github','ポートフォリオ','共同制作'].some(word=>value.includes(word)))return['実績作り入口','即報酬より、公開できる成果物や経験を作る入口。'];if(['報酬','納期','納品','修正'].some(word=>value.includes(word))||required.includes('github'))return['仕事入口','作業・納品・報酬の形が見える。足りない技術を埋めれば案件化しやすい。'];if(['discord','コミュニティ','勉強会','メンバー'].some(word=>value.includes(word)))return['コミュニティ入口','人や現場へ接続する入口。仕事化するには成果物を固定する。'];if(!required.length&&!missing.length)return['情報不足','必要技術がまだ選ばれていない。募集文を読み、作業に必要なものを選ぶ段階。'];return['入口混合','仕事・学習・実績作りが混ざっている可能性がある。得るものと消費するものを分ける。'];}
 function pickMission(missing){if(!missing.length)return{key:'deliveryLetter',...MISSIONS.deliveryLetter};const priority=['form','localStorage','responsive','api','json','wordpress','figma','client','deliveryLetter'];const key=priority.find(id=>missing.includes(id))||missing[0];return{key,...(MISSIONS[key]||MISSIONS.default)};}
 function renderList(list,items,empty){list.innerHTML=items.length?items.map(item=>`<li>${escapeHtml(item)}</li>`).join(''):`<li class="empty">${escapeHtml(empty)}</li>`;}
+function sourceValue(label,text){const match=text.match(new RegExp(`【${label}】\\n([\\s\\S]*?)(?=\\n\\n【|$)`));return match?.[1]?.trim()||'';}
+function valueOrFallback(value,fallback='記載なし'){return String(value||'').trim()||fallback;}
+function prepareInstructionFields(text,required){
+  const body=sourceValue('本文メモ',text);
+  workContent.value=body||'募集文を確認し、担当する作業範囲を記入する。';
+  deliverables.value='依頼主へ渡す成果物と納品形式を確認して記入する。';
+  clientQuestions.value=['担当する作業範囲はどこまでですか。','納品形式と納品方法は何ですか。','素材は支給されますか。','修正回数と修正範囲はどこまでですか。'].join('\n');
+  checkCriteria.value=required.length?required.map(id=>`${skillName(id)}に関する募集要件を満たしていること。`).join('\n'):'募集要件と納品形式を満たしていること。';
+}
+function generateCaseCard(){
+  if(!latestAnalysis){cardStatus.textContent='先に技能差分を出してください。';return;}
+  const requiredFields=[['作業内容',workContent.value],['納品物',deliverables.value],['相手へ聞く質問',clientQuestions.value],['チェック基準',checkCriteria.value]];
+  const missingFields=requiredFields.filter(([,value])=>!String(value).trim()).map(([label])=>label);
+  if(missingFields.length){cardStatus.textContent=`未入力：${missingFields.join('、')}`;caseCard.value='';return;}
+  const a=latestAnalysis;
+  caseCard.value=[
+    '【案件カード】','',
+    '【案件名】',valueOrFallback(a.title,'募集タイトル未記入'),'',
+    '【入口タイプ】',a.type,'',
+    '【作業内容】',workContent.value.trim(),'',
+    '【納品物】',deliverables.value.trim(),'',
+    '【必要技術】',a.required.length?a.required.map(skillName).join('、'):'未選択','',
+    '【不足技術】',a.missing.length?a.missing.map(skillName).join('、'):'なし','',
+    '【次の学習ミッション】',a.mission.title,'',
+    '【相手へ聞く質問】',clientQuestions.value.trim(),'',
+    '【チェック基準】',checkCriteria.value.trim(),'',
+    '【到達判定】',a.distance,'',
+    '【掲載場所】',valueOrFallback(a.platform),'',
+    '【募集URL】',valueOrFallback(a.url),'',
+    '【報酬】',valueOrFallback(a.reward),'',
+    '【納期】',valueOrFallback(a.deadline),'',
+    '【今使える装備】',a.matched.length?a.matched.join('、'):'なし','',
+    '【学習ミッションの完成条件】',a.mission.done.map(item=>`・${item}`).join('\n'),'',
+    '【次の行動】',nextAction.textContent
+  ].join('\n');
+  cardStatus.textContent='正式案件カードを生成しました。内容を確認してコピーできます。';
+  copyStatus.textContent='';
+  caseCard.scrollIntoView({behavior:'smooth',block:'center'});
+}
 function analyze(){
   const text=sourceText.value.trim(),required=checkedRequired(),matched=[],missing=[];
   required.forEach(id=>{const status=gearStatus(id);if(status==='none')missing.push(id);else matched.push(`${skillName(id)}｜${statusLabel(status)}`);});
@@ -131,7 +172,9 @@ function analyze(){
   renderList(matchedList,matched,'必要技術が未選択、または一致する装備なし');renderList(missingList,missing.map(skillName),'足りない技術なし。装備庫で作業開始へ');
   missionTitle.textContent=mission.title;missionWhy.textContent=mission.why;missionBuild.textContent=mission.build;renderList(missionDone,mission.done,'完成条件なし');missionGear.textContent=mission.gear;
   nextAction.textContent=!missing.length?'装備庫で案件カードを貼り、今日やる作業と納品情報を整理する。':missing.length===1?`先に「${skillName(missing[0])}」の小型ミッションを一つ作る。完成したら装備庫へ試作済みとして登録し、案件へ戻る。`:'全部を受ける前に、できる範囲だけを切り出す。足りない技術は一つだけ選んで学習ミッションへ回す。';
-  caseCard.value=['【入口アプリ｜案件カード】',`入口タイプ：${type}`,`到達判定：${distance}`,'','【募集文メモ】',text||'記載なし','','【必要技術】',required.length?required.map(skillName).join('、'):'未選択','','【今使える装備】',matched.length?matched.join('、'):'なし','','【足りない技術】',missing.length?missing.map(skillName).join('、'):'なし','','【次の学習ミッション】',mission.title,`作るもの：${mission.build}`,`装備登録：${mission.gear}`,'','【次の行動】',nextAction.textContent].join('\n');
+  const memo=memoData();
+  latestAnalysis={text,required,matched,missing,type,distance,mission,title:sourceValue('募集タイトル',text)||memo.title,platform:sourceValue('掲載場所',text)||memo.platform,reward:sourceValue('報酬',text)||memo.reward,deadline:sourceValue('納期',text)||memo.deadline,url:sourceValue('URL',text)||memo.url};
+  prepareInstructionFields(text,required);caseCard.value='';cardStatus.textContent='4項目を確認・修正して、正式案件カードを生成してください。';copyStatus.textContent='';
   resultCard.classList.remove('hidden');resultCard.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -142,7 +185,8 @@ jobMemoForm.addEventListener('input',saveMemo);
 jobMemoForm.addEventListener('submit',(event)=>{event.preventDefault();const text=buildMemoText(memoData());if(!text){memoStatus.textContent='分解する募集を一つ以上入力してください。';return;}sourceText.value=text;suggestSkills();resultCard.classList.add('hidden');showTab('analyze');sourceText.scrollIntoView({behavior:'smooth',block:'center'});});
 $('#sampleBtn').addEventListener('click',()=>{sourceText.value=SAMPLES[sampleIndex%SAMPLES.length];sampleIndex++;suggestSkills();});
 $('#suggestBtn').addEventListener('click',suggestSkills);$('#resetGearBtn').addEventListener('click',renderGear);$('#analyzeBtn').addEventListener('click',analyze);
-$('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');sourceText.value='';setRequired([]);copyStatus.textContent='';showTab('search');});
-$('#copyCardBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(caseCard.value);copyStatus.textContent='案件カードをコピーしました。装備庫へ貼れます。';}catch(error){caseCard.focus();caseCard.select();try{document.execCommand('copy');copyStatus.textContent='案件カードをコピーしました。';}catch(copyError){copyStatus.textContent='案件カード欄を長押しして手動コピーしてください。';}}});
+$('#generateCardBtn').addEventListener('click',generateCaseCard);
+$('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');sourceText.value='';setRequired([]);caseCard.value='';latestAnalysis=null;cardStatus.textContent='';copyStatus.textContent='';showTab('search');});
+$('#copyCardBtn').addEventListener('click',async()=>{if(!caseCard.value.trim()){copyStatus.textContent='先に正式案件カードを生成してください。';return;}try{await navigator.clipboard.writeText(caseCard.value);copyStatus.textContent='案件カードをコピーしました。装備庫へ貼れます。';}catch(error){caseCard.focus();caseCard.select();try{document.execCommand('copy');copyStatus.textContent='案件カードをコピーしました。';}catch(copyError){copyStatus.textContent='案件カード欄を長押しして手動コピーしてください。';}}});
 
 renderSearchCards();renderSkillChecks();renderGear();loadMemo();showTab('search',false);

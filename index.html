@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
-  <title>フリーランス入口アプリ v0.4</title>
+  <title>フリーランス入口アプリ v0.4B</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
-      <p class="version">フリーランス入口アプリ v0.4｜募集探索タブ追加版</p>
+      <p class="version">フリーランス入口アプリ v0.4B｜正式案件カード接続修正版</p>
       <h1>フリーランス<br>入口マップ©️</h1>
       <p class="lead">募集を探す場所と検索語を持ち、見つけた募集を技能差分と「次に学ぶ一つ」へ渡す司令台。</p>
     </header>
@@ -116,10 +116,23 @@
           </dl>
         </section>
         <section class="next-box"><h3>次の行動</h3><p id="nextAction"></p></section>
+        <section class="instruction-box">
+          <p class="step">STEP 6｜案件指示を確認する</p>
+          <h3>装備庫へ渡す前に確認・修正</h3>
+          <p class="small-note">候補文は完成物ではありません。募集内容と依頼主の回答に合わせて、作業開始前の指示へ直してください。</p>
+          <div class="instruction-form">
+            <label>作業内容<textarea id="workContent" rows="5" placeholder="これから行う作業を記入"></textarea></label>
+            <label>納品物<textarea id="deliverables" rows="4" placeholder="依頼主へ最終的に渡すものを記入"></textarea></label>
+            <label>相手へ聞く質問<textarea id="clientQuestions" rows="5" placeholder="作業範囲、素材、修正回数などの確認事項を記入"></textarea></label>
+            <label>チェック基準<textarea id="checkCriteria" rows="5" placeholder="制作後に確認する具体的な項目を記入"></textarea></label>
+          </div>
+          <button id="generateCardBtn" class="main-btn" type="button">正式案件カードを生成する</button>
+          <p id="cardStatus" class="small-note status-line" aria-live="polite"></p>
+        </section>
         <section class="handoff-box">
           <p class="handoff-kicker">入口から装備庫へ</p>
-          <h3>案件カード</h3>
-          <textarea id="caseCard" rows="11" readonly></textarea>
+          <h3>正式案件カード</h3>
+          <textarea id="caseCard" rows="18" readonly placeholder="上の4項目を確認して「正式案件カードを生成する」を押してください。"></textarea>
           <div class="button-row">
             <button id="copyCardBtn" class="main-btn small" type="button">案件カードをコピー</button>
             <a id="equipmentLink" class="equipment-btn" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener noreferrer">装備庫を開く</a>
