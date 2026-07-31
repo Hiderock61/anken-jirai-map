@@ -64,38 +64,43 @@
     </section>
 
     <section id="analyzeTab" class="tab-panel hidden">
-      <section class="card">
+      <div class="step-location" aria-live="polite">
+        <p id="stepLocation">現在地：STEP 1 / 5 募集文を貼る</p>
+        <div class="step-progress" aria-hidden="true"><span class="active"></span><span></span><span></span><span></span><span></span></div>
+      </div>
+
+      <section class="card wizard-step" data-wizard-step="1">
         <div class="section-head">
-          <div><p class="step">STEP 1</p><h2>募集文を貼る</h2></div>
+          <div><p class="step">STEP 1 / 5</p><h2>募集文を貼る</h2></div>
           <button id="sampleBtn" class="sub-btn" type="button">サンプル</button>
         </div>
         <textarea id="sourceText" rows="9" placeholder="例：HTML/CSS/JavaScriptでスマホ向け予約フォームを作ってください。"></textarea>
+        <button class="main-btn step-next" type="button" data-next-step="2">次へ：必要技術を選ぶ</button>
       </section>
 
-      <section class="card">
+      <section class="card wizard-step hidden" data-wizard-step="2">
         <div class="section-head">
-          <div><p class="step">STEP 2</p><h2>必要技術を選ぶ</h2></div>
+          <div><p class="step">STEP 2 / 5</p><h2>必要技術を選ぶ</h2></div>
           <button id="suggestBtn" class="sub-btn" type="button">文章から候補</button>
         </div>
         <p class="small-note">募集文から読める範囲で選び、最後は自分の目で確認します。</p>
         <div id="requiredSkills" class="skill-grid"></div>
+        <div class="step-actions"><button class="sub-btn step-back" type="button" data-back-step="1">戻る</button><button class="main-btn step-next" type="button" data-next-step="3">次へ：現在の装備を確認する</button></div>
       </section>
 
-      <section class="card">
+      <section class="card wizard-step hidden" data-wizard-step="3">
         <div class="section-head">
-          <div><p class="step">STEP 3</p><h2>現在の装備</h2></div>
+          <div><p class="step">STEP 3 / 5</p><h2>現在の装備を確認する</h2></div>
           <button id="resetGearBtn" class="sub-btn" type="button">初期装備に戻す</button>
         </div>
         <p class="small-note">動画を見ただけは装備にしない。動くものを作ったら「試作済み」、人に渡せるなら「納品可能」。</p>
         <div id="currentSkills" class="gear-list"></div>
+        <div class="step-actions"><button class="sub-btn step-back" type="button" data-back-step="2">戻る</button><button id="analyzeBtn" class="main-btn" type="button">技能差分を出して次へ</button></div>
       </section>
 
-      <section class="card action-card">
-        <button id="analyzeBtn" class="main-btn" type="button">技能差分を出す</button>
-      </section>
-
-      <section id="resultCard" class="card result-card hidden" aria-live="polite">
-        <p class="step">STEP 4｜分解結果</p>
+      <section id="resultCard" class="card result-card wizard-step hidden" data-wizard-step="4" aria-live="polite">
+        <p class="step">STEP 4 / 5</p>
+        <h2>作業指示を確認する</h2>
         <div class="primary-result">
           <p class="result-label">入口タイプ</p>
           <h2 id="entryType">情報不足</h2>
@@ -106,7 +111,7 @@
           <div><h3>足りない技術</h3><ul id="missingList"></ul></div>
         </section>
         <section class="mission-box">
-          <p class="step">STEP 5｜次に学ぶ一つ</p>
+          <p class="step">次に学ぶ一つ</p>
           <h3 id="missionTitle"></h3>
           <dl class="mission-detail">
             <dt>なぜ必要か</dt><dd id="missionWhy"></dd>
@@ -117,8 +122,7 @@
         </section>
         <section class="next-box"><h3>次の行動</h3><p id="nextAction"></p></section>
         <section class="instruction-box">
-          <p class="step">STEP 6｜案件指示を確認する</p>
-          <h3>装備庫へ渡す前に確認・修正</h3>
+          <h3>装備庫へ渡す4項目</h3>
           <p class="small-note">候補文は完成物ではありません。募集内容と依頼主の回答に合わせて、作業開始前の指示へ直してください。</p>
           <div class="instruction-form">
             <label>作業内容<textarea id="workContent" rows="5" placeholder="これから行う作業を記入"></textarea></label>
@@ -126,20 +130,29 @@
             <label>相手へ聞く質問<textarea id="clientQuestions" rows="5" placeholder="作業範囲、素材、修正回数などの確認事項を記入"></textarea></label>
             <label>チェック基準<textarea id="checkCriteria" rows="5" placeholder="制作後に確認する具体的な項目を記入"></textarea></label>
           </div>
-          <button id="generateCardBtn" class="main-btn" type="button">正式案件カードを生成する</button>
           <p id="cardStatus" class="small-note status-line" aria-live="polite"></p>
         </section>
+        <div class="step-actions"><button class="sub-btn step-back" type="button" data-back-step="3">戻る</button><button class="main-btn step-next" type="button" data-next-step="5">次へ：案件カードを作る</button></div>
+      </section>
+
+      <section class="card wizard-step hidden" data-wizard-step="5">
+        <p class="step">STEP 5 / 5</p>
+        <h2>正式案件カードを生成する</h2>
+        <p class="required-heading-note">装備庫が読む必須見出し：<br>【案件名】 【作業内容】 【納品物】 【チェック基準】</p>
+        <button id="generateCardBtn" class="main-btn create-card-btn" type="button">正式案件カードを作る</button>
         <section class="handoff-box">
           <p class="handoff-kicker">入口から装備庫へ</p>
           <h3>正式案件カード</h3>
-          <textarea id="caseCard" rows="18" readonly placeholder="上の4項目を確認して「正式案件カードを生成する」を押してください。"></textarea>
-          <div class="button-row">
-            <button id="copyCardBtn" class="main-btn small" type="button">案件カードをコピー</button>
-            <a id="equipmentLink" class="equipment-btn" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener noreferrer">装備庫を開く</a>
+          <textarea id="caseCard" rows="18" readonly placeholder="「正式案件カードを作る」を押すと、ここに表示されます。"></textarea>
+          <div id="cardValidation" class="required-check hidden" aria-live="polite">
+            <p>必須4見出しを確認済み</p>
+            <div><span>✓【案件名】</span><span>✓【作業内容】</span><span>✓【納品物】</span><span>✓【チェック基準】</span></div>
           </div>
+          <button id="copyCardBtn" class="main-btn copy-handoff-btn" type="button">コピーして装備庫へ渡す</button>
           <p id="copyStatus" class="small-note"></p>
+          <a id="equipmentLink" class="equipment-btn fallback-equipment-link" href="https://hiderock61.github.io/freelance-/" target="_blank" rel="noopener noreferrer">装備庫だけを開く</a>
         </section>
-        <button id="resetBtn" class="sub-btn wide" type="button">別の募集を調べる</button>
+        <div class="step-actions"><button class="sub-btn step-back" type="button" data-back-step="4">戻る</button><button id="resetBtn" class="sub-btn" type="button">別の募集を調べる</button></div>
       </section>
 
       <section class="card map-card">

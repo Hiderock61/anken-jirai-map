@@ -73,14 +73,23 @@ let sampleIndex = 0;
 
 const sourceText=$('#sourceText'),requiredSkillsBox=$('#requiredSkills'),currentSkillsBox=$('#currentSkills'),resultCard=$('#resultCard'),jobMemoForm=$('#jobMemoForm'),memoStatus=$('#memoStatus');
 const entryType=$('#entryType'),entrySummary=$('#entrySummary'),matchedList=$('#matchedList'),missingList=$('#missingList'),missionTitle=$('#missionTitle'),missionWhy=$('#missionWhy'),missionBuild=$('#missionBuild'),missionDone=$('#missionDone'),missionGear=$('#missionGear'),nextAction=$('#nextAction'),caseCard=$('#caseCard'),copyStatus=$('#copyStatus');
-const workContent=$('#workContent'),deliverables=$('#deliverables'),clientQuestions=$('#clientQuestions'),checkCriteria=$('#checkCriteria'),cardStatus=$('#cardStatus');
+const workContent=$('#workContent'),deliverables=$('#deliverables'),clientQuestions=$('#clientQuestions'),checkCriteria=$('#checkCriteria'),cardStatus=$('#cardStatus'),cardValidation=$('#cardValidation');
 let latestAnalysis=null;
+let currentWizardStep=1;
+const WIZARD_LABELS=['','募集文を貼る','必要技術を選ぶ','現在の装備を確認する','作業指示を確認する','正式案件カードを生成する'];
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
 function showTab(name,scroll=true){
   document.querySelectorAll('.tab-panel').forEach(panel=>panel.classList.toggle('hidden',panel.id!==`${name}Tab`));
   document.querySelectorAll('.tab-btn').forEach(button=>{const active=button.dataset.tab===name;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));});
   if(scroll) window.scrollTo({top:0,behavior:'smooth'});
+}
+function showWizardStep(step,scroll=true){
+  currentWizardStep=step;
+  document.querySelectorAll('.wizard-step').forEach(panel=>panel.classList.toggle('hidden',Number(panel.dataset.wizardStep)!==step));
+  $('#stepLocation').textContent=`現在地：STEP ${step} / 5 ${WIZARD_LABELS[step]}`;
+  document.querySelectorAll('.step-progress span').forEach((dot,index)=>{dot.classList.toggle('active',index<step);dot.classList.toggle('current',index===step-1);});
+  if(scroll) $('#stepLocation').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderSearchCards(){
   $('#searchSections').innerHTML=SEARCH_GROUPS.map((group,index)=>`<section class="category-block" aria-labelledby="category-${index}">
@@ -133,6 +142,7 @@ function prepareInstructionFields(text,required){
   clientQuestions.value=['担当する作業範囲はどこまでですか。','納品形式と納品方法は何ですか。','素材は支給されますか。','修正回数と修正範囲はどこまでですか。'].join('\n');
   checkCriteria.value=required.length?required.map(id=>`${skillName(id)}に関する募集要件を満たしていること。`).join('\n'):'募集要件と納品形式を満たしていること。';
 }
+function invalidateCaseCard(){caseCard.value='';cardValidation.classList.add('hidden');copyStatus.textContent='';}
 function generateCaseCard(){
   if(!latestAnalysis){cardStatus.textContent='先に技能差分を出してください。';return;}
   const requiredFields=[['作業内容',workContent.value],['納品物',deliverables.value],['相手へ聞く質問',clientQuestions.value],['チェック基準',checkCriteria.value]];
@@ -160,6 +170,7 @@ function generateCaseCard(){
     '【次の行動】',nextAction.textContent
   ].join('\n');
   cardStatus.textContent='正式案件カードを生成しました。内容を確認してコピーできます。';
+  cardValidation.classList.remove('hidden');
   copyStatus.textContent='';
   caseCard.scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -174,19 +185,36 @@ function analyze(){
   nextAction.textContent=!missing.length?'装備庫で案件カードを貼り、今日やる作業と納品情報を整理する。':missing.length===1?`先に「${skillName(missing[0])}」の小型ミッションを一つ作る。完成したら装備庫へ試作済みとして登録し、案件へ戻る。`:'全部を受ける前に、できる範囲だけを切り出す。足りない技術は一つだけ選んで学習ミッションへ回す。';
   const memo=memoData();
   latestAnalysis={text,required,matched,missing,type,distance,mission,title:sourceValue('募集タイトル',text)||memo.title,platform:sourceValue('掲載場所',text)||memo.platform,reward:sourceValue('報酬',text)||memo.reward,deadline:sourceValue('納期',text)||memo.deadline,url:sourceValue('URL',text)||memo.url};
-  prepareInstructionFields(text,required);caseCard.value='';cardStatus.textContent='4項目を確認・修正して、正式案件カードを生成してください。';copyStatus.textContent='';
-  resultCard.classList.remove('hidden');resultCard.scrollIntoView({behavior:'smooth',block:'start'});
+  prepareInstructionFields(text,required);invalidateCaseCard();cardStatus.textContent='4項目を確認・修正して、正式案件カードを生成してください。';
+  resultCard.classList.remove('hidden');showWizardStep(4);
 }
 
 document.querySelectorAll('.tab-btn').forEach(button=>button.addEventListener('click',()=>showTab(button.dataset.tab)));
 $('#searchSections').addEventListener('click',(event)=>{const search=event.target.closest('.search-btn'),copy=event.target.closest('.copy-query-btn');if(search)openSearch(search.dataset.engine,search.dataset.query);if(copy)copyQuery(copy.dataset.query);});
 $('#closeFallbackBtn').addEventListener('click',()=>$('#copyFallback').classList.add('hidden'));
 jobMemoForm.addEventListener('input',saveMemo);
-jobMemoForm.addEventListener('submit',(event)=>{event.preventDefault();const text=buildMemoText(memoData());if(!text){memoStatus.textContent='分解する募集を一つ以上入力してください。';return;}sourceText.value=text;suggestSkills();resultCard.classList.add('hidden');showTab('analyze');sourceText.scrollIntoView({behavior:'smooth',block:'center'});});
+jobMemoForm.addEventListener('submit',(event)=>{event.preventDefault();const text=buildMemoText(memoData());if(!text){memoStatus.textContent='分解する募集を一つ以上入力してください。';return;}sourceText.value=text;suggestSkills();resultCard.classList.add('hidden');showTab('analyze');showWizardStep(1,false);sourceText.scrollIntoView({behavior:'smooth',block:'center'});});
 $('#sampleBtn').addEventListener('click',()=>{sourceText.value=SAMPLES[sampleIndex%SAMPLES.length];sampleIndex++;suggestSkills();});
 $('#suggestBtn').addEventListener('click',suggestSkills);$('#resetGearBtn').addEventListener('click',renderGear);$('#analyzeBtn').addEventListener('click',analyze);
 $('#generateCardBtn').addEventListener('click',generateCaseCard);
-$('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');sourceText.value='';setRequired([]);caseCard.value='';latestAnalysis=null;cardStatus.textContent='';copyStatus.textContent='';showTab('search');});
-$('#copyCardBtn').addEventListener('click',async()=>{if(!caseCard.value.trim()){copyStatus.textContent='先に正式案件カードを生成してください。';return;}try{await navigator.clipboard.writeText(caseCard.value);copyStatus.textContent='案件カードをコピーしました。装備庫へ貼れます。';}catch(error){caseCard.focus();caseCard.select();try{document.execCommand('copy');copyStatus.textContent='案件カードをコピーしました。';}catch(copyError){copyStatus.textContent='案件カード欄を長押しして手動コピーしてください。';}}});
+document.querySelectorAll('[data-next-step]').forEach(button=>button.addEventListener('click',()=>{
+  const next=Number(button.dataset.nextStep);
+  if(currentWizardStep===1&&!sourceText.value.trim()){sourceText.focus();return;}
+  if(next===5){const fields=[workContent,deliverables,clientQuestions,checkCriteria];if(fields.some(field=>!field.value.trim())){cardStatus.textContent='4項目をすべて確認・入力してください。';fields.find(field=>!field.value.trim())?.focus();return;}}
+  showWizardStep(next);
+}));
+document.querySelectorAll('[data-back-step]').forEach(button=>button.addEventListener('click',()=>showWizardStep(Number(button.dataset.backStep))));
+[workContent,deliverables,clientQuestions,checkCriteria].forEach(field=>field.addEventListener('input',invalidateCaseCard));
+$('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');sourceText.value='';setRequired([]);caseCard.value='';latestAnalysis=null;cardStatus.textContent='';copyStatus.textContent='';cardValidation.classList.add('hidden');showWizardStep(1,false);showTab('search');});
+$('#copyCardBtn').addEventListener('click',async()=>{
+  if(!caseCard.value.trim()){copyStatus.textContent='先に正式案件カードを作ってください。';return;}
+  const equipmentWindow=window.open('about:blank','_blank');
+  let copied=false;
+  try{await navigator.clipboard.writeText(caseCard.value);copied=true;}
+  catch(error){caseCard.focus();caseCard.select();try{copied=document.execCommand('copy');}catch(copyError){copied=false;}}
+  if(!copied){if(equipmentWindow)equipmentWindow.close();copyStatus.textContent='案件カード欄を長押しして手動コピーしてください。';return;}
+  copyStatus.textContent='コピーしました。装備庫を開きます。';
+  if(equipmentWindow){equipmentWindow.opener=null;equipmentWindow.location.href=$('#equipmentLink').href;}else{window.location.href=$('#equipmentLink').href;}
+});
 
-renderSearchCards();renderSkillChecks();renderGear();loadMemo();showTab('search',false);
+renderSearchCards();renderSkillChecks();renderGear();loadMemo();showWizardStep(1,false);showTab('search',false);
