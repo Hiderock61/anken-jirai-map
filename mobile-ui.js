@@ -50,6 +50,7 @@
   const candidateSkills = candidatePanel.querySelector('#candidateSkills');
   const otherSkills = allPanel.querySelector('#otherSkills');
   const selectedSkillChips = selectedPanel.querySelector('#selectedSkillChips');
+  let otherExpanded = false;
 
   function skillIdFromLabel(label) {
     return label.querySelector('input[name="required"]')?.value || '';
@@ -87,7 +88,11 @@
     const hasCandidates = ids.length > 0;
     candidatePanel.classList.toggle('hidden', !hasCandidates);
     moreButton.classList.toggle('hidden', !hasCandidates);
-    if (!hasCandidates) {
+    if (hasCandidates) {
+      allPanel.classList.toggle('hidden', !otherExpanded);
+      moreButton.setAttribute('aria-expanded', String(otherExpanded));
+      moreButton.textContent = otherExpanded ? 'ほかの技術を閉じる' : 'ほかの技術を見る';
+    } else {
       allPanel.classList.remove('hidden');
       moreButton.setAttribute('aria-expanded', 'true');
     }
@@ -114,10 +119,10 @@
   }
 
   moreButton.addEventListener('click', () => {
-    const opening = allPanel.classList.contains('hidden');
-    allPanel.classList.toggle('hidden', !opening);
-    moreButton.setAttribute('aria-expanded', String(opening));
-    moreButton.textContent = opening ? 'ほかの技術を閉じる' : 'ほかの技術を見る';
+    otherExpanded = !otherExpanded;
+    allPanel.classList.toggle('hidden', !otherExpanded);
+    moreButton.setAttribute('aria-expanded', String(otherExpanded));
+    moreButton.textContent = otherExpanded ? 'ほかの技術を閉じる' : 'ほかの技術を見る';
   });
 
   requiredSkills.addEventListener('change', updateSelected);
