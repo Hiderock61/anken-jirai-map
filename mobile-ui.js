@@ -3,7 +3,7 @@
     1: '今やること：募集文を確認して次へ進む',
     2: '今やること：必要な技術を選んで次へ進む',
     3: '今やること：現在の装備状態を確認する',
-    4: '今やること：作業指示4項目を確認・修正する',
+    4: '今やること：作業内容・納品物・質問・チェック基準を確認する',
     5: '今やること：案件カードを生成してコピーする'
   };
 
@@ -108,14 +108,14 @@
     const step = currentStep();
     actionGuide.textContent = ACTIONS[step] || '';
     document.body.dataset.wizardStep = String(step);
-    document.body.classList.toggle('has-fixed-step-nav', step >= 2 && step <= 5 && !analyzeTab.classList.contains('hidden'));
+    document.body.classList.toggle('has-fixed-step-nav', step >= 1 && step <= 5 && !analyzeTab.classList.contains('hidden'));
     if (step === 2) arrangeSkills();
   }
 
   function updateTabMode() {
     const analyzeOpen = !analyzeTab.classList.contains('hidden');
     document.body.classList.toggle('analyze-mode', analyzeOpen);
-    document.body.classList.toggle('has-fixed-step-nav', analyzeOpen && currentStep() >= 2);
+    document.body.classList.toggle('has-fixed-step-nav', analyzeOpen && currentStep() >= 1);
   }
 
   moreButton.addEventListener('click', () => {
