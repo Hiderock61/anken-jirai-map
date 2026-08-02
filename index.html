@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
-  <title>フリーランス入口アプリ v0.4C</title>
+  <title>入口アプリ v0.4D</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="hero">
-      <p class="version">フリーランス入口アプリ v0.4C｜分解タブ・一画面一工程UI整理版</p>
+      <p class="version">入口アプリ v0.4D｜案件カード状態・未確定情報分離版</p>
       <h1>フリーランス<br>入口マップ©️</h1>
       <p class="lead">募集を探す場所と検索語を持ち、見つけた募集を技能差分と「次に学ぶ一つ」へ渡す司令台。</p>
     </header>
@@ -121,6 +121,7 @@
             <label>納品物<textarea id="deliverables" rows="4" placeholder="例：修正済みHTML/CSSファイル、確認用URL"></textarea></label>
             <label>相手へ聞く質問<textarea id="clientQuestions" rows="4" placeholder="例：対象ページ、素材提供、修正回数を確認する"></textarea></label>
             <label>チェック基準<textarea id="checkCriteria" rows="5" placeholder="例：iPhone幅で横はみ出しがない&#10;主要ボタンがタップできる&#10;トップ画面が崩れていない"></textarea></label>
+            <label class="permission-check"><input id="productionPermission" type="checkbox"><span>受注済み、または制作を開始してよいと確認済み</span></label>
           </div>
           <p id="step4Status" class="small-note status-line" aria-live="polite"></p>
         </section>
@@ -130,6 +131,7 @@
       <section class="card wizard-step hidden" data-wizard-step="5">
         <p class="step">STEP 5 / 5</p>
         <h2>正式案件カードを生成する</h2>
+        <div id="caseStatePreview" class="case-state-preview checking"><span>カード状態</span><strong>確認中</strong><p>制作許可と未確定事項を確認してください。</p></div>
         <div class="primary-result">
           <p class="result-label">入口タイプ・到達判定</p>
           <h2 id="entryType">情報不足</h2>
