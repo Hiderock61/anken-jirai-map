@@ -44,7 +44,7 @@ const SEARCH_GROUPS = [
 
 const SKILLS = [
   {id:'html',name:'HTML',keywords:['html','マークアップ','構造']},{id:'css',name:'CSS',keywords:['css','デザイン','レイアウト','装飾','表示崩れ']},
-  {id:'js',name:'JavaScript基礎',keywords:['javascript','js','動作','ボタン','クリック','アコーディオン']},{id:'responsive',name:'レスポンシブ',keywords:['レスポンシブ','スマホ','スマートフォン','モバイル','375px']},
+  {id:'js',name:'JavaScript基礎',keywords:['javascript','js','動作','ボタン','クリック','アコーディオン']},{id:'responsive',name:'レスポンシブ',keywords:['レスポンシブ','スマホ','スマートフォン','モバイル','iPhone','375px']},
   {id:'spa',name:'静的SPA',keywords:['spa','画面遷移','タブ','切り替え']},{id:'github',name:'GitHub Pages公開',keywords:['github','pages','公開url','url納品','公開']},
   {id:'localStorage',name:'localStorage保存',keywords:['localstorage','保存','端末内','再読込','履歴','台帳']},{id:'api',name:'API取得',keywords:['api','fetch','外部データ','取得']},
   {id:'json',name:'JSON処理',keywords:['json','データ','配列','オブジェクト']},{id:'form',name:'フォーム入力',keywords:['フォーム','入力欄','予約','問い合わせ','formspree','バリデーション','未入力']},
@@ -75,6 +75,7 @@ const sourceText=$('#sourceText'),requiredSkillsBox=$('#requiredSkills'),current
 const entryType=$('#entryType'),entrySummary=$('#entrySummary'),matchedList=$('#matchedList'),missingList=$('#missingList'),missionTitle=$('#missionTitle'),missionWhy=$('#missionWhy'),missionBuild=$('#missionBuild'),missionDone=$('#missionDone'),missionGear=$('#missionGear'),nextAction=$('#nextAction'),caseCard=$('#caseCard'),copyStatus=$('#copyStatus');
 const workContent=$('#workContent'),deliverables=$('#deliverables'),clientQuestions=$('#clientQuestions'),checkCriteria=$('#checkCriteria'),productionPermission=$('#productionPermission'),caseStatePreview=$('#caseStatePreview'),step4Status=$('#step4Status'),cardStatus=$('#cardStatus'),cardValidation=$('#cardValidation');
 const humanResult=$('#humanResult'),knownJobFacts=$('#knownJobFacts'),humanUnknownList=$('#humanUnknownList'),humanDecision=$('#humanDecision'),humanNext=$('#humanNext'),handoffStatus=$('#handoffStatus'),equipmentLink=$('#equipmentLink'),internalCardDetails=$('#internalCardDetails');
+const extractedFacts=$('#extractedFacts'),extractedFactsList=$('#extractedFactsList');
 const wizardMemoFields=[...document.querySelectorAll('[data-memo-key]')];
 let latestAnalysis=null;
 let currentWizardStep=1;
@@ -140,12 +141,74 @@ function pickMission(missing){if(!missing.length)return{key:'deliveryLetter',...
 function renderList(list,items,empty){list.innerHTML=items.length?items.map(item=>`<li>${escapeHtml(item)}</li>`).join(''):`<li class="empty">${escapeHtml(empty)}</li>`;}
 function sourceValue(label,text){const match=text.match(new RegExp(`【${label}】\\n([\\s\\S]*?)(?=\\n\\n【|$)`));return match?.[1]?.trim()||'';}
 function valueOrFallback(value,fallback='記載なし'){return String(value||'').trim()||fallback;}
+function extractStep4Facts(text){
+  const body=sourceValue('本文メモ',text)||text;
+  const hasWebPage=/(既存|現在).{0,8}(Web|ウェブ|ページ|サイト)/i.test(body);
+  const hasMobile=/(スマホ|スマートフォン|iPhone|レスポンシブ)/i.test(body);
+  const hasOverflow=/(横.{0,6}はみ出|横スクロール)/.test(body);
+  const hasPositionIssue=/(文字|テキスト).{0,8}(ボタン)?.{0,10}(位置|崩れ)|文字やボタンの位置.{0,6}崩/.test(body);
+  const hasHtmlCss=/HTML\s*[\/_・と,、]?\s*CSS/i.test(body);
+  let work='';
+  if(hasWebPage&&hasMobile&&(hasOverflow||hasPositionIssue)&&hasHtmlCss){
+    work='既存Webページのスマホ表示を修正し、iPhoneで横にはみ出す箇所や文字・ボタンの位置崩れをHTML/CSSで直す。';
+  }else if(/(修正|対応|直す|調整|作成|制作|実装)/.test(body)){
+    work=body.split(/\n|。/).map(line=>line.trim()).filter(line=>line&&/(修正|対応|直す|調整|作成|制作|実装)/.test(line)).slice(0,2).join('。');
+    if(work&&!/[。.]$/.test(work))work+='。';
+  }
+
+  const deliverableParts=[];
+  if(/修正済み.{0,12}HTML\s*[\/_・と,、]?\s*CSS.{0,8}ファイル/i.test(body))deliverableParts.push('修正済みHTML/CSSファイル');
+  else if(/HTML\s*[\/_・と,、]?\s*CSS.{0,8}ファイル/i.test(body))deliverableParts.push('HTML/CSSファイル');
+  else if(/修正済み.{0,10}ファイル/.test(body))deliverableParts.push('修正済みファイル');
+  if(/確認用\s*URL/i.test(body))deliverableParts.push('確認用URL');
+  else if(/公開\s*URL/i.test(body))deliverableParts.push('公開URL');
+  const deliverable=[...new Set(deliverableParts)].join('、');
+
+  const checks=[];
+  if(hasOverflow)checks.push('・iPhoneで横にはみ出しがないこと');
+  if(/主要.{0,5}ボタン.{0,8}(タップ|押)/.test(body))checks.push('・主要ボタンがタップできること');
+  if(/文字.{0,8}読める.{0,8}(大きさ|サイズ)/.test(body))checks.push('・文字が読める大きさで表示されること');
+  if(!checks.length){
+    body.split('\n').map(line=>line.trim().replace(/^[・●-]\s*/, '')).filter(line=>/(ないこと|できること|読めること|崩れないこと)/.test(line)).forEach(line=>checks.push(`・${line}`));
+  }
+
+  let material='';
+  if(/素材は.{0,8}(現在|既存).{0,8}(ページ|サイト).{0,8}(そのまま)?使用/.test(body)||/(現在|既存).{0,8}(ページ|サイト)をそのまま使用/.test(body))material='現在のページをそのまま使用';
+  else if(/素材支給あり|素材.{0,8}支給/.test(body))material='素材支給あり';
+  else if(/画像や文章はそのまま/.test(body))material='画像や文章をそのまま使用';
+
+  const revisionMatch=body.match(/修正(?:回数)?(?:は|：|:)??\s*([0-9０-９一二三四五六七八九十]+)\s*回(?:まで)?/);
+  const revision=revisionMatch?`${revisionMatch[1]}回${/回まで/.test(revisionMatch[0])?'まで':''}`:'';
+  const permission=/(制作|作業)(?:を)?開始.{0,8}(問題ありません|OK|大丈夫|構いません|よい状態)|進めてください/.test(body);
+  const targetUrl=Boolean(sourceValue('URL',text)||body.match(/https?:\/\/\S+/));
+  const deliveryMethod=/(メール|チャット|GitHub|Drive|ドライブ|zip|添付).{0,8}(納品|共有|送付|渡)/i.test(body);
+  const sourceFileMethod=/(修正対象|元).{0,8}ファイル.{0,12}(共有|支給|渡)/.test(body);
+  const previewOwner=/確認用\s*URL.{0,12}(依頼主|受注者|こちら|そちら|用意|発行|作成)/.test(body);
+
+  const questions=[];
+  if(!work)questions.push('担当する作業範囲はどこまでですか。');
+  if(!deliverable)questions.push('納品物は何ですか。');
+  if(!checks.length)questions.push('完成のチェック基準を教えてください。');
+  if(!targetUrl&&hasWebPage)questions.push('対象ページのURLを教えてください。');
+  if(!sourceFileMethod&&hasWebPage)questions.push('修正対象ファイルはどの方法で共有されますか。');
+  if(deliverable&&/確認用URL/.test(deliverable)&&!previewOwner)questions.push('確認用URLはどちらで用意しますか。');
+  else if(deliverable&&!deliveryMethod)questions.push('納品物は、どの方法でお渡しすればよいですか。');
+  if(!material)questions.push('素材は支給されますか。');
+  if(!revision)questions.push('修正回数と修正範囲はどこまでですか。');
+  if(!permission)questions.push('制作開始してよい状態ですか。');
+  return {work,deliverable,checks:[...new Set(checks)].join('\n'),material,revision,permission,questions:[...new Set(questions)],targetUrl};
+}
 function prepareInstructionFields(text,required){
-  workContent.value='';
-  deliverables.value='';
-  clientQuestions.value=['担当する作業範囲はどこまでですか。','納品物は何ですか。','納品形式と納品方法は何ですか。','素材は支給されますか。','修正回数と修正範囲はどこまでですか。','制作開始してよい状態ですか。'].join('\n');
-  checkCriteria.value='';
-  productionPermission.checked=false;
+  const extracted=extractStep4Facts(text);
+  workContent.value=extracted.work;
+  deliverables.value=extracted.deliverable;
+  clientQuestions.value=extracted.questions.length?extracted.questions.join('\n'):'なし';
+  checkCriteria.value=extracted.checks;
+  productionPermission.checked=extracted.permission;
+  const facts=[extracted.material&&`素材：${extracted.material}`,extracted.revision&&`修正回数：${extracted.revision}`,extracted.permission&&'制作開始許可：あり'].filter(Boolean);
+  extractedFactsList.innerHTML=facts.map(item=>`<li>${escapeHtml(item)}</li>`).join('');
+  extractedFacts.classList.toggle('hidden',!facts.length);
+  return extracted;
 }
 const guideOnlyPatterns=[/^募集文を確認し、?担当する作業範囲を記入する[。.]?$/, /^依頼主へ渡す成果物と納品形式を確認して記入する[。.]?$/, /^募集要件と納品形式を満たしていること[。.]?$/, /^(確認する|記入する|決める|整理する)[。.]?$/, /^納品形式を確認する[。.]?$/, /^担当範囲を記入する[。.]?$/];
 function usableCaseText(value){const text=String(value||'').trim();return Boolean(text)&&text!=='未確定'&&text!=='記載なし'&&!guideOnlyPatterns.some(pattern=>pattern.test(text));}
@@ -164,6 +227,10 @@ function assessCaseCard(){
   if(/納品方法/.test(questions))unknown.push('納品方法');
   if(/修正/.test(questions))unknown.push('修正回数と修正範囲');
   if(/担当.*範囲|作業範囲/.test(questions))unknown.push('担当する作業範囲');
+  if(/対象ページ.*URL|対象URL/.test(questions))unknown.push('対象ページのURL');
+  if(/修正対象ファイル.*共有|ファイル.*受け渡し/.test(questions))unknown.push('修正対象ファイルの受け渡し方法');
+  if(/確認用URL.*(どちら|誰|用意)/.test(questions))unknown.push('確認用URLを誰が用意するか');
+  if(/どの方法でお渡し/.test(questions))unknown.push('納品方法');
   if(questionsRemain&&!unknown.length)unknown.push('依頼主への確認事項');
   if(!permissionOk)unknown.push('制作許可');
   const ready=workOk&&deliverableOk&&checkOk&&permissionOk&&!questionsRemain;
@@ -179,6 +246,11 @@ function renderHumanResult(a,state){
     ['募集URL',humanValue(a.url)],
     ['報酬',humanValue(a.reward)],
     ['納期',humanValue(a.deadline)],
+    ['作業内容',state.work],
+    ['納品物',state.deliverable],
+    ['素材',a.extracted?.material||'未確定'],
+    ['修正回数',a.extracted?.revision||'未確定'],
+    ['制作開始許可',a.extracted?.permission?'あり':'未確認'],
     ['必要そうな技術',a.required.length?a.required.map(skillName).join('、'):'未選択'],
     ['今使える装備',a.matched.length?a.matched.join('、'):'なし'],
     ['不足技術',a.missing.length?a.missing.map(skillName).join('、'):'なし'],
@@ -247,8 +319,9 @@ function analyze(){
   missionTitle.textContent=mission.title;missionWhy.textContent=mission.why;missionBuild.textContent=mission.build;renderList(missionDone,mission.done,'完成条件なし');missionGear.textContent=mission.gear;
   nextAction.textContent=!missing.length?'装備庫で案件カードを貼り、今日やる作業と納品情報を整理する。':missing.length===1?`先に「${skillName(missing[0])}」の小型ミッションを一つ作る。完成したら装備庫へ試作済みとして登録し、案件へ戻る。`:'全部を受ける前に、できる範囲だけを切り出す。足りない技術は一つだけ選んで学習ミッションへ回す。';
   const memo=memoData();
-  latestAnalysis={text,required,matched,missing,type,distance,mission,title:sourceValue('募集タイトル',text)||memo.title,platform:sourceValue('掲載場所',text)||memo.platform,reward:sourceValue('報酬',text)||memo.reward,deadline:sourceValue('納期',text)||memo.deadline,url:sourceValue('URL',text)||memo.url};
-  prepareInstructionFields(text,required);invalidateCaseCard();step4Status.textContent='4項目を確認・修正してください。';cardStatus.textContent='';
+  const extracted=prepareInstructionFields(text,required);
+  latestAnalysis={text,required,matched,missing,type,distance,mission,extracted,title:sourceValue('募集タイトル',text)||memo.title,platform:sourceValue('掲載場所',text)||memo.platform,reward:sourceValue('報酬',text)||memo.reward,deadline:sourceValue('納期',text)||memo.deadline,url:sourceValue('URL',text)||memo.url};
+  invalidateCaseCard();step4Status.textContent='本文から読めた内容を入れました。未確定の項目だけ確認してください。';cardStatus.textContent='';
   resultCard.classList.remove('hidden');showWizardStep(4);
 }
 
