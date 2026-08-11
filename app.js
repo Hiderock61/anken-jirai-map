@@ -74,10 +74,11 @@ let sampleIndex = 0;
 const sourceText=$('#sourceText'),requiredSkillsBox=$('#requiredSkills'),currentSkillsBox=$('#currentSkills'),resultCard=$('#resultCard'),jobMemoForm=$('#jobMemoForm'),memoStatus=$('#memoStatus');
 const entryType=$('#entryType'),entrySummary=$('#entrySummary'),matchedList=$('#matchedList'),missingList=$('#missingList'),missionTitle=$('#missionTitle'),missionWhy=$('#missionWhy'),missionBuild=$('#missionBuild'),missionDone=$('#missionDone'),missionGear=$('#missionGear'),nextAction=$('#nextAction'),caseCard=$('#caseCard'),copyStatus=$('#copyStatus');
 const workContent=$('#workContent'),deliverables=$('#deliverables'),clientQuestions=$('#clientQuestions'),checkCriteria=$('#checkCriteria'),productionPermission=$('#productionPermission'),caseStatePreview=$('#caseStatePreview'),step4Status=$('#step4Status'),cardStatus=$('#cardStatus'),cardValidation=$('#cardValidation');
+const humanResult=$('#humanResult'),knownJobFacts=$('#knownJobFacts'),humanUnknownList=$('#humanUnknownList'),humanDecision=$('#humanDecision'),humanNext=$('#humanNext'),handoffStatus=$('#handoffStatus'),equipmentLink=$('#equipmentLink'),internalCardDetails=$('#internalCardDetails');
 const wizardMemoFields=[...document.querySelectorAll('[data-memo-key]')];
 let latestAnalysis=null;
 let currentWizardStep=1;
-const WIZARD_LABELS=['','募集文を貼る','必要技術を選ぶ','現在の装備を確認する','作業内容を確認する','正式案件カードを生成する'];
+const WIZARD_LABELS=['','募集文を貼る','必要技術を選ぶ','現在の装備を確認する','作業内容を確認する','判定結果を確認する'];
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
 function showTab(name,scroll=true){
@@ -169,7 +170,39 @@ function assessCaseCard(){
   return {state:ready?'制作可能':'確認中',work:workOk?work:'未確定',deliverable:deliverableOk?deliverable:'未確定',checks:checkOk?checks:'未確定',questions:questions||(ready?'なし':'制作開始前に、未確定事項を依頼主へ確認してください。'),unknown:ready?'なし':[...new Set(unknown)].map(item=>`・${item}`).join('\n'),nextAction:ready?'装備庫で案件カードを貼り、今日やる作業と納品情報を整理する。':'依頼主へ未確定事項を確認し、回答後に案件カードを更新する。'};
 }
 function updateCaseStatePreview(){const a=assessCaseCard();caseStatePreview.classList.toggle('ready',a.state==='制作可能');caseStatePreview.classList.toggle('checking',a.state!=='制作可能');caseStatePreview.querySelector('strong').textContent=a.state;caseStatePreview.querySelector('p').textContent=a.state==='制作可能'?'具体的な指示と制作許可がそろっています。':'未確定事項の確認作業だけを行い、実制作へ進まないでください。';}
-function invalidateCaseCard(){caseCard.value='';cardValidation.classList.add('hidden');copyStatus.textContent='';}
+function invalidateCaseCard(){caseCard.value='';cardValidation.classList.add('hidden');copyStatus.textContent='';handoffStatus.textContent='';humanResult.classList.add('hidden');equipmentLink.classList.add('hidden');internalCardDetails.open=false;}
+function humanValue(value,fallback='未入力'){return String(value||'').trim()||fallback;}
+function renderHumanResult(a,state){
+  const facts=[
+    ['仕事名',humanValue(a.title)],
+    ['掲載場所',humanValue(a.platform)],
+    ['募集URL',humanValue(a.url)],
+    ['報酬',humanValue(a.reward)],
+    ['納期',humanValue(a.deadline)],
+    ['必要そうな技術',a.required.length?a.required.map(skillName).join('、'):'未選択'],
+    ['今使える装備',a.matched.length?a.matched.join('、'):'なし'],
+    ['不足技術',a.missing.length?a.missing.map(skillName).join('、'):'なし'],
+    ['到達判定',state.state==='制作可能'?a.distance:'確認が必要']
+  ];
+  knownJobFacts.innerHTML=facts.map(([label,value])=>`<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('');
+  const unknownItems=state.unknown==='なし'?[]:state.unknown.split('\n').map(item=>item.replace(/^・\s*/, '').trim()).filter(Boolean);
+  humanUnknownList.innerHTML=unknownItems.length?unknownItems.map(item=>`<li>${escapeHtml(item)}</li>`).join(''):'<li class="empty">なし</li>';
+  const ready=state.state==='制作可能';
+  let decision='作業内容、納品物、チェック基準、制作開始の許可が揃っているため、装備庫で制作準備へ進めます。';
+  if(!ready){
+    if(state.work==='未確定'||state.deliverable==='未確定')decision='まだ仕事内容や納品物が確定していないため、今は制作前の確認が必要です。';
+    else if(state.checks==='未確定')decision='完成後のチェック基準が確定していないため、今は制作前の確認が必要です。';
+    else if(!productionPermission.checked)decision='制作開始の許可が確認できていないため、今は制作前の確認が必要です。';
+    else decision='この仕事には、まだ依頼主へ確認することがあるため、今は制作前の確認が必要です。';
+  }
+  humanDecision.textContent=decision;
+  humanNext.textContent=ready
+    ? 'この仕事情報を装備庫へ渡すと、今日やる作業、制作手順、検品項目を確認できます。'
+    : 'この仕事情報を装備庫へ渡すと、依頼主へ何を確認すればよいか整理できます。\n確認が終わるまで、制作は始めません。';
+  humanResult.classList.remove('hidden');
+  handoffStatus.textContent='';
+  equipmentLink.classList.add('hidden');
+}
 function generateCaseCard(){
   if(!latestAnalysis){cardStatus.textContent='先に技能差分を出してください。';return;}
   const a=latestAnalysis;
@@ -197,10 +230,12 @@ function generateCaseCard(){
     '【次の行動】',state.nextAction
   ].join('\n');
   nextAction.textContent=state.nextAction;updateCaseStatePreview();
-  cardStatus.textContent=`正式案件カードを生成しました。カード状態：${state.state}`;
+  renderHumanResult(a,state);
+  cardStatus.textContent=`判定結果を作りました。現在の状態：${state.state}`;
   cardValidation.classList.remove('hidden');
   copyStatus.textContent='';
-  caseCard.scrollIntoView({behavior:'smooth',block:'center'});
+  internalCardDetails.open=false;
+  humanResult.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function analyze(){
   const text=sourceText.value.trim(),required=checkedRequired(),matched=[],missing=[];
@@ -236,14 +271,18 @@ document.querySelectorAll('[data-next-step]').forEach(button=>button.addEventLis
 document.querySelectorAll('[data-back-step]').forEach(button=>button.addEventListener('click',()=>showWizardStep(Number(button.dataset.backStep))));
 [workContent,deliverables,clientQuestions,checkCriteria].forEach(field=>field.addEventListener('input',()=>{invalidateCaseCard();updateCaseStatePreview();}));
 productionPermission.addEventListener('change',()=>{invalidateCaseCard();updateCaseStatePreview();});
-$('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');sourceText.value='';setRequired([]);caseCard.value='';latestAnalysis=null;productionPermission.checked=false;step4Status.textContent='';cardStatus.textContent='';copyStatus.textContent='';cardValidation.classList.add('hidden');updateCaseStatePreview();showWizardStep(1,false);showTab('search');});
-$('#copyCardBtn').addEventListener('click',async()=>{
-  if(!caseCard.value.trim()){copyStatus.textContent='先に正式案件カードを作ってください。';return;}
+$('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');sourceText.value='';setRequired([]);caseCard.value='';latestAnalysis=null;productionPermission.checked=false;step4Status.textContent='';cardStatus.textContent='';copyStatus.textContent='';handoffStatus.textContent='';humanResult.classList.add('hidden');equipmentLink.classList.add('hidden');internalCardDetails.open=false;cardValidation.classList.add('hidden');updateCaseStatePreview();showWizardStep(1,false);showTab('search');});
+async function copyCaseCard(statusTarget){
+  if(!caseCard.value.trim()){statusTarget.textContent='先にこの仕事の判定結果を作ってください。';return false;}
   let copied=false;
   try{await navigator.clipboard.writeText(caseCard.value);copied=true;}
   catch(error){caseCard.focus();caseCard.select();try{copied=document.execCommand('copy');}catch(copyError){copied=false;}}
-  if(!copied){copyStatus.textContent='案件カード欄を長押しして手動コピーしてください。';return;}
-  copyStatus.textContent='正式案件カードをコピーしました。次に装備庫を開いて貼れます。';
-});
+  if(!copied){statusTarget.textContent='内部カード欄を開き、長押しして手動コピーしてください。';internalCardDetails.open=true;return false;}
+  statusTarget.textContent='この仕事情報をコピーしました。次に装備庫を開き、白い欄へ貼ってください。';
+  equipmentLink.classList.remove('hidden');
+  return true;
+}
+$('#handoffJobBtn').addEventListener('click',()=>copyCaseCard(handoffStatus));
+$('#copyCardBtn').addEventListener('click',()=>copyCaseCard(copyStatus));
 
 renderSearchCards();renderSkillChecks();renderGear();loadMemo();syncWizardMemoFromMain();sourceText.value=buildMemoText(memoData());updateCaseStatePreview();showWizardStep(1,false);showTab('search',false);
