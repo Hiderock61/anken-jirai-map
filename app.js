@@ -141,6 +141,25 @@ function pickMission(missing){if(!missing.length)return{key:'deliveryLetter',...
 function renderList(list,items,empty){list.innerHTML=items.length?items.map(item=>`<li>${escapeHtml(item)}</li>`).join(''):`<li class="empty">${escapeHtml(empty)}</li>`;}
 function sourceValue(label,text){const match=text.match(new RegExp(`【${label}】\\n([\\s\\S]*?)(?=\\n\\n【|$)`));return match?.[1]?.trim()||'';}
 function valueOrFallback(value,fallback='記載なし'){return String(value||'').trim()||fallback;}
+function extractMaterialCondition(body){
+  const compact=String(body||'').replace(/[\s　]+/g,'');
+  const existingPage=/(?:既存|現在|現行|元)(?:の)?(?:Web)?ページ(?:内|にある|の)?(?:画像|文章|テキスト|文言|素材).{0,24}(?:使|使用|利用|流用)/;
+  const existingPair=/(?:既存|現在|現行|今ある|手元の|掲載中の)(?:の)?(?:画像|文章|テキスト|文言).{0,20}(?:画像|文章|テキスト|文言).{0,20}(?:そのまま)?(?:使|使用|利用|流用)/;
+  const materialReuse=/(?:現行|既存|今ある|手元の)(?:の)?素材(?:を)?(?:そのまま)?(?:使|使用|利用|流用)/;
+  const noNewMaterial=/(?:(?:新規|追加).{0,8}(?:素材|画像|文章|テキスト).{0,8}(?:作成|制作|追加).{0,5}(?:は)?不要|(?:素材|画像|文章|テキスト).{0,5}(?:の)?(?:新規|追加).{0,5}(?:作成|制作|追加).{0,5}(?:は)?不要|(?:画像|文章|テキスト|文言).{0,12}(?:差し替え|変更).{0,5}(?:は)?不要|素材(?:は)?追加しなくて(?:よい|良い))/;
+  const keepExisting=/(?:既存の構成と素材をベースに修正|現在の内容を活かして修正|今のページ内容を維持して.{0,16}(?:表示|レイアウト).{0,8}(?:直|修正)|掲載中の(?:文章|文言)と画像(?:は)?そのまま|中身は変えずに(?:表示|レイアウト)だけ(?:直|修正))/;
+
+  if(existingPage.test(compact))return '既存ページの画像・文章を使用';
+  if(/現行素材(?:を)?(?:そのまま)?(?:使|使用|利用|流用)/.test(compact))return '現行素材を流用';
+  if(materialReuse.test(compact))return '既存素材を流用';
+  if(/画像(?:や|と|・)文章(?:は|を)?そのまま/.test(compact)||existingPair.test(compact))return '既存の画像・文章を使用';
+  if(noNewMaterial.test(compact))return '新規素材は不要（既存素材を使用）';
+  if(keepExisting.test(compact))return '既存の画像・文章を使用';
+  if(/素材は.{0,8}(?:現在|既存).{0,8}(?:ページ|サイト).{0,8}(?:そのまま)?使用/.test(compact)||/(?:現在|既存).{0,8}(?:ページ|サイト)をそのまま使用/.test(compact))return '現在のページをそのまま使用';
+  if(/素材支給あり|素材.{0,8}支給/.test(compact))return '素材支給あり';
+  return '';
+}
+
 function extractStep4Facts(text){
   const body=sourceValue('本文メモ',text)||text;
   const hasWebPage=/(既存|現在).{0,8}(Web|ウェブ|ページ|サイト)/i.test(body);
@@ -172,10 +191,7 @@ function extractStep4Facts(text){
     body.split('\n').map(line=>line.trim().replace(/^[・●-]\s*/, '')).filter(line=>/(ないこと|できること|読めること|崩れないこと)/.test(line)).forEach(line=>checks.push(`・${line}`));
   }
 
-  let material='';
-  if(/素材は.{0,8}(現在|既存).{0,8}(ページ|サイト).{0,8}(そのまま)?使用/.test(body)||/(現在|既存).{0,8}(ページ|サイト)をそのまま使用/.test(body))material='現在のページをそのまま使用';
-  else if(/素材支給あり|素材.{0,8}支給/.test(body))material='素材支給あり';
-  else if(/画像や文章はそのまま/.test(body))material='画像や文章をそのまま使用';
+  const material=extractMaterialCondition(body);
 
   const revisionMatch=body.match(/修正(?:回数)?(?:は|：|:)??\s*([0-9０-９一二三四五六七八九十]+)\s*回(?:まで)?/);
   const revision=revisionMatch?`${revisionMatch[1]}回${/回まで/.test(revisionMatch[0])?'まで':''}`:'';
