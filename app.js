@@ -152,7 +152,7 @@ function extractMaterialCondition(body){
   if(existingPage.test(compact))return '既存ページの画像・文章を使用';
   if(/現行素材(?:を)?(?:そのまま)?(?:使|使用|利用|流用)/.test(compact))return '現行素材を流用';
   if(materialReuse.test(compact))return '既存素材を流用';
-  if(/画像(?:や|と|・)文章(?:は|を)?そのまま/.test(compact)||existingPair.test(compact))return '既存の画像・文章を使用';
+  if(/(?:画像|文章|テキスト|文言)(?:や|と|・)(?:画像|文章|テキスト|文言)(?:は|を)?(?:そのまま|既存のものを(?:使|使用|利用))/.test(compact)||/現在掲載されている(?:文章|テキスト|文言|画像).{0,16}(?:文章|テキスト|文言|画像).{0,12}(?:使|使用|利用)/.test(compact)||existingPair.test(compact))return '既存の画像・文章を使用';
   if(noNewMaterial.test(compact))return '新規素材は不要（既存素材を使用）';
   if(keepExisting.test(compact))return '既存の画像・文章を使用';
   if(/素材は.{0,8}(?:現在|既存).{0,8}(?:ページ|サイト).{0,8}(?:そのまま)?使用/.test(compact)||/(?:現在|既存).{0,8}(?:ページ|サイト)をそのまま使用/.test(compact))return '現在のページをそのまま使用';
