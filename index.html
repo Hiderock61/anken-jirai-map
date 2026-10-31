@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
   <title>入口アプリ v0.4G</title>
-  <link rel="stylesheet" href="style.css?v=04g-usable1101">
+  <link rel="stylesheet" href="style.css?v=04g-original1101">
 </head>
 <body>
   <main class="app-shell">
@@ -147,6 +147,14 @@
       <section class="card wizard-step hidden" data-wizard-step="5">
         <p class="step">STEP 5 / 5</p>
         <h2>この仕事の現在地を確認する</h2>
+        <section id="practiceOriginal" class="practice-original hidden" aria-labelledby="practiceOriginalHeading">
+          <p class="practice-original-eyebrow">🧪 STEP 0｜アプリに渡した架空の依頼文</p>
+          <h3 id="practiceOriginalHeading">まず、この依頼を読んでみよう</h3>
+          <p id="practiceOriginalTitle" class="practice-original-title"></p>
+          <p id="practiceOriginalMeta" class="practice-original-meta"></p>
+          <div id="practiceOriginalText" class="practice-original-message"></div>
+          <p class="practice-original-caption">ここまでが入力した募集文です。この下はアプリによる整理結果です。実際の依頼・契約ではありません。</p>
+        </section>
         <div id="caseStatePreview" class="case-state-preview checking"><span>カード状態</span><strong>確認中</strong><p>制作許可と未確定事項を確認してください。</p></div>
         <div class="primary-result">
           <p class="result-label">入口タイプ・到達判定</p>
@@ -171,7 +179,7 @@
         <p class="required-heading-note">入力した内容から、装備庫へ渡す仕事情報と人間向けの説明を作ります。</p>
         <div id="practiceBanner" class="practice-banner hidden" role="status">
           <strong>🧪 練習中：これは架空の案件です。</strong>
-          <p>制作許可は未確認なので「確認中」。下で「この仕事を装備庫へ持っていく」→ コピー → 装備庫に貼る。実際の応募や制作はしません。</p>
+          <p>上の依頼文を読んでから、下の整理結果を見比べてください。制作許可は未確認のため「確認中」です。実際の応募や制作はしません。</p>
           <button id="stopPracticeBtn" class="sub-btn" type="button">練習終了・元の募集メモへ戻る</button>
         </div>
         <button id="generateCardBtn" class="main-btn create-card-btn" type="button">この仕事の判定結果を作る</button>
@@ -233,7 +241,7 @@
       <button id="closeFallbackBtn" class="main-btn" type="button">閉じる</button>
     </div>
   </div>
-  <script src="app.js?v=04g-oneclick1101"></script>
+  <script src="app.js?v=04g-original1101"></script>
   <script src="mobile-ui.js"></script>
 </body>
 </html>
