@@ -79,6 +79,8 @@ const extractedFacts=$('#extractedFacts'),extractedFactsList=$('#extractedFactsL
 const wizardMemoFields=[...document.querySelectorAll('[data-memo-key]')];
 let latestAnalysis=null;
 let currentWizardStep=1;
+let practiceActive=false;
+let practiceSavedMemo=null;
 const WIZARD_LABELS=['','募集文を貼る','必要技術を選ぶ','現在の装備を確認する','作業内容を確認する','判定結果を確認する'];
 
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,(char)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
@@ -118,6 +120,8 @@ function syncWizardMemoFromMain(){wizardMemoFields.forEach(field=>{field.value=j
 function syncMainMemoFromWizard(){wizardMemoFields.forEach(field=>{const target=jobMemoForm.elements[field.dataset.memoKey];if(target)target.value=field.value;});}
 function refreshSourceFromMemo(){syncMainMemoFromWizard();sourceText.value=buildMemoText(memoData());saveMemo();}
 function saveMemo(){
+  // 練習中は、本人の本物の募集下書きをローカル保存で上書きしない。
+  if(practiceActive){memoStatus.textContent='練習中：本物の募集メモは保存・上書きしていません。';return;}
   try{localStorage.setItem('freelance-entry-v04-memo',JSON.stringify(memoData()));memoStatus.textContent='この端末にメモを保存しました。';}
   catch(error){memoStatus.textContent='端末保存は使えません。入力中のメモはそのまま利用できます。';}
 }
@@ -374,7 +378,7 @@ document.querySelectorAll('[data-next-step]').forEach(button=>button.addEventLis
 document.querySelectorAll('[data-back-step]').forEach(button=>button.addEventListener('click',()=>showWizardStep(Number(button.dataset.backStep))));
 [workContent,deliverables,clientQuestions,checkCriteria].forEach(field=>field.addEventListener('input',()=>{invalidateCaseCard();updateCaseStatePreview();}));
 productionPermission.addEventListener('change',()=>{invalidateCaseCard();updateCaseStatePreview();});
-$('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');sourceText.value='';setRequired([]);caseCard.value='';latestAnalysis=null;productionPermission.checked=false;step4Status.textContent='';cardStatus.textContent='';copyStatus.textContent='';handoffStatus.textContent='';humanResult.classList.add('hidden');equipmentLink.classList.add('hidden');internalCardDetails.open=false;cardValidation.classList.add('hidden');updateCaseStatePreview();showWizardStep(1,false);showTab('search');});
+$('#resetBtn').addEventListener('click',()=>{if(practiceActive){finishPractice();return;}resultCard.classList.add('hidden');sourceText.value='';setRequired([]);caseCard.value='';latestAnalysis=null;productionPermission.checked=false;step4Status.textContent='';cardStatus.textContent='';copyStatus.textContent='';handoffStatus.textContent='';humanResult.classList.add('hidden');equipmentLink.classList.add('hidden');internalCardDetails.open=false;cardValidation.classList.add('hidden');updateCaseStatePreview();showWizardStep(1,false);showTab('search');});
 async function copyCaseCard(statusTarget){
   if(!caseCard.value.trim()){statusTarget.textContent='先にこの仕事の判定結果を作ってください。';return false;}
   let copied=false;
@@ -402,5 +406,66 @@ async function copyCaseCard(statusTarget){
 }
 $('#handoffJobBtn').addEventListener('click',()=>copyCaseCard(handoffStatus));
 $('#copyCardBtn').addEventListener('click',()=>copyCaseCard(copyStatus));
+
+// iPhoneの最短体験。現物の案件・契約許可や元の下書きには触れずに受渡しを練習。
+function startPractice(){
+  if(practiceActive){showTab('analyze',false);showWizardStep(5,false);return;}
+  practiceSavedMemo={...memoData()};
+  practiceActive=true;
+  const example={
+    platform:'練習専用：実在しない募集',
+    title:'【練習】架空LPのスマホ表示修正',
+    reward:'架空の3,000円（実際の報酬ではない）',
+    deadline:'なし（練習）',
+    skills:'HTML CSS レスポンシブ',
+    body:'完全な架空案件です。既存LPのスマホ表示が崩れる部分のCSSを修正する。納品は修正済みHTML/CSSファイルと確認用URL。完成条件はiPhone幅で文字が読めて横はみ出しがないこと。依頼主から正式な制作開始許可は出ていません。実データ・実応募・実納品は禁止。',
+    url:''
+  };
+  for(const [key,value] of Object.entries(example)){
+    const element=jobMemoForm.elements[key];if(element)element.value=value;
+  }
+  syncWizardMemoFromMain();
+  sourceText.value=buildMemoText(memoData());
+  suggestSkills();
+  showTab('analyze',false);
+  analyze();
+  productionPermission.checked=false;
+  updateCaseStatePreview();
+  showWizardStep(5,false);
+  generateCaseCard();
+  $('#practiceBanner').classList.remove('hidden');
+  $('#stopPracticeTopBtn').classList.remove('hidden');
+  $('#firstRunStatus').textContent='架空の「確認中」カードを作りました。コピーして装備庫に貼る練習ができます。';
+}
+function finishPractice(){
+  if(!practiceActive)return;
+  practiceActive=false;
+  for(const [key,value] of Object.entries(practiceSavedMemo||{})){
+    const element=jobMemoForm.elements[key];if(element)element.value=value;
+  }
+  practiceSavedMemo=null;
+  syncWizardMemoFromMain();
+  sourceText.value=buildMemoText(memoData());
+  latestAnalysis=null;
+  workContent.value='';deliverables.value='';clientQuestions.value='';checkCriteria.value='';
+  productionPermission.checked=false;
+  setRequired([]);
+  invalidateCaseCard();
+  resultCard.classList.add('hidden');
+  $('#practiceBanner').classList.add('hidden');
+  $('#stopPracticeTopBtn').classList.add('hidden');
+  $('#firstRunStatus').textContent='練習を終了しました。元の募集メモに戻っています。';
+  showWizardStep(1,false);showTab('search',false);
+  updateCaseStatePreview();
+  jobMemoForm.scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('#startPracticeBtn').addEventListener('click',startPractice);
+$('#stopPracticeBtn').addEventListener('click',finishPractice);
+$('#stopPracticeTopBtn').addEventListener('click',finishPractice);
+$('#startRealBtn').addEventListener('click',()=>{
+  if(practiceActive)finishPractice();
+  showTab('search',false);
+  jobMemoForm.scrollIntoView({behavior:'smooth',block:'start'});
+});
 
 renderSearchCards();renderSkillChecks();renderGear();loadMemo();syncWizardMemoFromMain();sourceText.value=buildMemoText(memoData());updateCaseStatePreview();showWizardStep(1,false);showTab('search',false);
