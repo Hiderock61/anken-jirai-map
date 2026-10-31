@@ -35,3 +35,14 @@ body.has-fixed-step-nav .wizard-step:not(.hidden){padding-bottom:115px}body.has-
 .practice-banner p{margin:10px 0 15px;line-height:1.75;}
 .practice-banner button{width:100%;min-height:48px;background:transparent;color:#fff;border:1px solid #ffcf6b;}
 @media(min-width:680px){.first-run-actions{grid-template-columns:1fr 1fr;}}
+
+
+/* 2026-11-01 Public beta: show the unprocessed fictional job before its analysis. */
+.practice-original{margin:14px 0 20px;border:2px solid #9ac7fc;border-radius:18px;background:#15243a;padding:18px 16px;scroll-margin-top:92px;}
+.practice-original-eyebrow{color:#b9ddff;font-weight:850;font-size:13px;margin:0 0 9px;}
+.practice-original h3{font-size:clamp(20px,5vw,25px);margin:0 0 13px;line-height:1.45;}
+.practice-original-title{font-size:17px;font-weight:800;color:#fff;margin:0 0 8px;}
+.practice-original-meta{font-size:13px;font-weight:650;color:#fbe39c;margin:0 0 15px;}
+.practice-original-message{padding:16px;border-radius:13px;background:#f8fbff;color:#152335;font-size:16px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;}
+.practice-original-caption{font-size:13px;color:#c9e9ff;line-height:1.8;margin:13px 0 0;}
+@media(max-width:450px){.practice-original{padding:15px 12px;}.practice-original-message{padding:14px;font-size:16px;}}
