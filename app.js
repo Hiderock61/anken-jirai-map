@@ -341,7 +341,7 @@ function generateCaseCard(){
   cardValidation.classList.remove('hidden');
   copyStatus.textContent='';
   internalCardDetails.open=false;
-  humanResult.scrollIntoView({behavior:'smooth',block:'start'});
+  if(!practiceActive) humanResult.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function analyze(){
   const text=sourceText.value.trim(),required=checkedRequired(),matched=[],missing=[];
@@ -423,7 +423,11 @@ $('#copyCardBtn').addEventListener('click',()=>copyCaseCard(copyStatus));
 
 // iPhoneの最短体験。現物の案件・契約許可や元の下書きには触れずに受渡しを練習。
 function startPractice(){
-  if(practiceActive){showTab('analyze',false);showWizardStep(5,false);return;}
+  if(practiceActive){
+    showTab('analyze',false);showWizardStep(5,false);
+    $('#practiceOriginal').scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
   practiceSavedMemo={...memoData()};
   practiceActive=true;
   const example={
@@ -432,7 +436,7 @@ function startPractice(){
     reward:'架空の3,000円（実際の報酬ではない）',
     deadline:'なし（練習）',
     skills:'HTML CSS レスポンシブ',
-    body:'完全な架空案件です。既存LPのスマホ表示が崩れる部分のCSSを修正する。納品は修正済みHTML/CSSファイルと確認用URL。完成条件はiPhone幅で文字が読めて横はみ出しがないこと。依頼主から正式な制作開始許可は出ていません。実データ・実応募・実納品は禁止。',
+    body:'こんにちは。小さなお店の紹介ページをスマートフォンで見ると、文字と画像が画面の右側にはみ出してしまいます。\n\n今あるHTMLとCSSを直して、iPhoneでも横スクロールせず読めるようにしていただきたいです。\n\n納品してほしいもの：修正済みのHTML/CSSファイルと、表示を確認できるURL。\n\n予算は3,000円ほどです。納期は相談したいです。\n\nなお、修正用ファイルの受け渡し方法と正式な制作開始の許可は、まだ確認できていません。',
     url:''
   };
   for(const [key,value] of Object.entries(example)){
@@ -440,6 +444,11 @@ function startPractice(){
   }
   syncWizardMemoFromMain();
   sourceText.value=buildMemoText(memoData());
+  // Before showing the breakdown, display the exact fictional request being analyzed.
+  $('#practiceOriginalTitle').textContent=example.title;
+  $('#practiceOriginalMeta').textContent='掲載先：練習専用 ／ 報酬：架空の3,000円 ／ 納期：相談中';
+  $('#practiceOriginalText').textContent=example.body;
+  $('#practiceOriginal').classList.remove('hidden');
   suggestSkills();
   showTab('analyze',false);
   analyze();
@@ -449,7 +458,8 @@ function startPractice(){
   generateCaseCard();
   $('#practiceBanner').classList.remove('hidden');
   $('#stopPracticeTopBtn').classList.remove('hidden');
-  $('#firstRunStatus').textContent='架空の仕事の確認結果ができました。コピーして次の画面に貼る練習ができます。';
+  $('#firstRunStatus').textContent='架空の依頼文と、それを整理した結果を表示しました。';
+  $('#practiceOriginal').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function finishPractice(){
   if(!practiceActive)return;
@@ -467,6 +477,10 @@ function finishPractice(){
   invalidateCaseCard();
   resultCard.classList.add('hidden');
   $('#practiceBanner').classList.add('hidden');
+  $('#practiceOriginal').classList.add('hidden');
+  $('#practiceOriginalTitle').textContent='';
+  $('#practiceOriginalMeta').textContent='';
+  $('#practiceOriginalText').textContent='';
   $('#stopPracticeTopBtn').classList.add('hidden');
   $('#firstRunStatus').textContent='練習を終了しました。元の募集メモに戻っています。';
   showWizardStep(1,false);showTab('search',false);
