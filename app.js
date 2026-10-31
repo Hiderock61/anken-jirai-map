@@ -424,8 +424,8 @@ $('#copyCardBtn').addEventListener('click',()=>copyCaseCard(copyStatus));
 // iPhoneの最短体験。現物の案件・契約許可や元の下書きには触れずに受渡しを練習。
 function startPractice(){
   if(practiceActive){
-    showTab('analyze',false);showWizardStep(5,false);
-    $('#practiceOriginal').scrollIntoView({behavior:'smooth',block:'start'});
+    document.body.dataset.practicePhase='read';
+    $('#practiceOriginal').scrollIntoView({behavior:'instant',block:'start'});
     return;
   }
   practiceSavedMemo={...memoData()};
@@ -449,6 +449,7 @@ function startPractice(){
   $('#practiceOriginalMeta').textContent='掲載先：練習専用 ／ 報酬：架空の3,000円 ／ 納期：相談中';
   $('#practiceOriginalText').textContent=example.body;
   $('#practiceOriginal').classList.remove('hidden');
+  document.body.dataset.practicePhase='read';
   suggestSkills();
   showTab('analyze',false);
   analyze();
@@ -458,12 +459,14 @@ function startPractice(){
   generateCaseCard();
   $('#practiceBanner').classList.remove('hidden');
   $('#stopPracticeTopBtn').classList.remove('hidden');
-  $('#firstRunStatus').textContent='架空の依頼文と、それを整理した結果を表示しました。';
-  $('#practiceOriginal').scrollIntoView({behavior:'smooth',block:'start'});
+  $('#practiceReturnToOriginalBtn').classList.remove('hidden');
+  $('#firstRunStatus').textContent='まず架空の依頼文を読んでください。「整理結果を見る」を押すと分析画面へ進みます。';
+  $('#practiceOriginal').scrollIntoView({behavior:'instant',block:'start'});
 }
 function finishPractice(){
   if(!practiceActive)return;
   practiceActive=false;
+  delete document.body.dataset.practicePhase;
   for(const [key,value] of Object.entries(practiceSavedMemo||{})){
     const element=jobMemoForm.elements[key];if(element)element.value=value;
   }
@@ -481,12 +484,26 @@ function finishPractice(){
   $('#practiceOriginalTitle').textContent='';
   $('#practiceOriginalMeta').textContent='';
   $('#practiceOriginalText').textContent='';
+  $('#practiceReturnToOriginalBtn').classList.add('hidden');
   $('#stopPracticeTopBtn').classList.add('hidden');
   $('#firstRunStatus').textContent='練習を終了しました。元の募集メモに戻っています。';
   showWizardStep(1,false);showTab('search',false);
   updateCaseStatePreview();
   jobMemoForm.scrollIntoView({behavior:'smooth',block:'start'});
 }
+$('#practiceReadResultBtn').addEventListener('click',()=>{
+  if(!practiceActive)return;
+  document.body.dataset.practicePhase='result';
+  showTab('analyze',false);
+  showWizardStep(5,false);
+  // Position at the result heading, never in the middle of the original request.
+  $('#stepLocation').scrollIntoView({behavior:'instant',block:'start'});
+});
+$('#practiceReturnToOriginalBtn').addEventListener('click',()=>{
+  if(!practiceActive)return;
+  document.body.dataset.practicePhase='read';
+  $('#practiceOriginal').scrollIntoView({behavior:'instant',block:'start'});
+});
 $('#startPracticeBtn').addEventListener('click',startPractice);
 $('#stopPracticeBtn').addEventListener('click',finishPractice);
 $('#stopPracticeTopBtn').addEventListener('click',finishPractice);
