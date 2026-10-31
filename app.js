@@ -364,9 +364,22 @@ $('#resetBtn').addEventListener('click',()=>{resultCard.classList.add('hidden');
 async function copyCaseCard(statusTarget){
   if(!caseCard.value.trim()){statusTarget.textContent='先にこの仕事の判定結果を作ってください。';return false;}
   let copied=false;
-  try{await navigator.clipboard.writeText(caseCard.value);copied=true;}
-  catch(error){caseCard.focus();caseCard.select();try{copied=document.execCommand('copy');}catch(copyError){copied=false;}}
-  if(!copied){statusTarget.textContent='内部カード欄を開き、長押しして手動コピーしてください。';internalCardDetails.open=true;return false;}
+  try{
+    if(!navigator.clipboard?.writeText)throw Error('clipboard_unavailable');
+    await navigator.clipboard.writeText(caseCard.value);copied=true;
+  }catch(error){
+    // The card is inside closed details: reveal before selecting or legacy copying.
+    internalCardDetails.open=true;
+    caseCard.focus();caseCard.select();
+    try{copied=document.execCommand('copy')===true;}catch(copyError){copied=false;}
+  }
+  if(!copied){
+    internalCardDetails.open=true;
+    equipmentLink.classList.add('hidden');
+    statusTarget.textContent='自動コピーできません。開いた内部カード欄の文章を長押しして手動コピーしてください。';
+    caseCard.focus();caseCard.select();
+    return false;
+  }
   statusTarget.textContent='この仕事情報をコピーしました。次に装備庫を開き、白い欄へ貼ってください。';
   equipmentLink.classList.remove('hidden');
   return true;
