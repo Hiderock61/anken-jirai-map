@@ -394,13 +394,13 @@ async function copyCaseCard(statusTarget){
   if(!copied){
     internalCardDetails.open=true;
     equipmentLink.classList.remove('hidden');
-    equipmentLink.textContent='手動コピーができたら装備庫を開く';
-    statusTarget.textContent='自動コピーできません。開いた内部カード欄の文章を長押ししてコピーし、その後で装備庫を開いて貼ってください。まだコピーは完了していません。';
+    equipmentLink.textContent='手動コピーができたら次の画面へ';
+    statusTarget.textContent='自動コピーできません。開いた仕事情報欄の文章を長押ししてコピーし、次の画面を開いて貼ってください。まだコピーは完了していません。';
     caseCard.focus();caseCard.select();
     return false;
   }
-  statusTarget.textContent='この仕事情報をコピーしました。次に装備庫を開き、白い欄へ貼ってください。';
-  equipmentLink.textContent='次にフリーランス装備庫を開く';
+  statusTarget.textContent='仕事情報をコピーしました。次の画面（仕事の確認ツール）を開き、白い欄へ貼ってください。';
+  equipmentLink.textContent='次の画面で確認する（仕事の確認ツール）';
   equipmentLink.classList.remove('hidden');
   return true;
 }
@@ -435,7 +435,7 @@ function startPractice(){
   generateCaseCard();
   $('#practiceBanner').classList.remove('hidden');
   $('#stopPracticeTopBtn').classList.remove('hidden');
-  $('#firstRunStatus').textContent='架空の「確認中」カードを作りました。コピーして装備庫に貼る練習ができます。';
+  $('#firstRunStatus').textContent='架空の仕事の確認結果ができました。コピーして次の画面に貼る練習ができます。';
 }
 function finishPractice(){
   if(!practiceActive)return;
