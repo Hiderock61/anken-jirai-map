@@ -55,7 +55,9 @@ const SKILLS = [
   {id:'client',name:'依頼主対応',keywords:['依頼主','クライアント','確認','修正','ヒアリング']}
 ];
 
-const DEFAULT_GEAR = {html:'deliverable',css:'deliverable',js:'prototype',responsive:'prototype',spa:'prototype',github:'deliverable',writing:'deliverable',screenshot:'deliverable',deliveryLetter:'deliverable',client:'prototype',docs:'prototype',canva:'prototype'};
+// Beta: skill levels are set by each visitor, not inherited from the developer.
+const GEAR_STORE_KEY = 'freelance-entry-v04-gear';
+const MEMO_STORE_KEY = 'freelance-entry-v04-memo';
 const MISSIONS = {
   localStorage:{title:'localStorageで案件メモを保存する',why:'案件カードや入力内容を、再読込後も端末内に残すため。',build:'案件名・納期・状態を保存できる小型メモアプリ',done:['入力できる','保存できる','再読込しても残る','削除できる'],gear:'localStorage保存｜試作済み'},
   api:{title:'fetchで外部APIから1件表示する',why:'外部データを使う案件に入る入口を作るため。',build:'APIからタイトルを1件取得して表示する小型表示アプリ',done:['ボタンで取得できる','取得中表示がある','エラー時に止まらない','結果を画面へ表示できる'],gear:'API取得｜試作済み'},
@@ -122,22 +124,42 @@ function refreshSourceFromMemo(){syncMainMemoFromWizard();sourceText.value=build
 function saveMemo(){
   // 練習中は、本人の本物の募集下書きをローカル保存で上書きしない。
   if(practiceActive){memoStatus.textContent='練習中：本物の募集メモは保存・上書きしていません。';return;}
-  try{localStorage.setItem('freelance-entry-v04-memo',JSON.stringify(memoData()));memoStatus.textContent='この端末にメモを保存しました。';}
+  try{localStorage.setItem(MEMO_STORE_KEY,JSON.stringify(memoData()));memoStatus.textContent='この端末にメモを保存しました。';}
   catch(error){memoStatus.textContent='端末保存は使えません。入力中のメモはそのまま利用できます。';}
 }
 function loadMemo(){
-  try{const data=JSON.parse(localStorage.getItem('freelance-entry-v04-memo')||'null');if(!data)return;Object.entries(data).forEach(([key,value])=>{if(jobMemoForm.elements[key])jobMemoForm.elements[key].value=value;});}
+  try{const data=JSON.parse(localStorage.getItem(MEMO_STORE_KEY)||'null');if(!data)return;Object.entries(data).forEach(([key,value])=>{if(jobMemoForm.elements[key])jobMemoForm.elements[key].value=value;});}
   catch(error){memoStatus.textContent='保存済みメモは読めませんでした。新しく入力できます。';}
 }
 function buildMemoText(data){
   return [['掲載場所',data.platform],['募集タイトル',data.title],['報酬',data.reward],['納期',data.deadline],['必要そうな技術',data.skills],['本文メモ',data.body],['URL',data.url]].filter(([,value])=>String(value||'').trim()).map(([label,value])=>`【${label}】\n${String(value).trim()}`).join('\n\n');
 }
 function renderSkillChecks(){requiredSkillsBox.innerHTML=SKILLS.map(skill=>`<label class="skill-chip"><input type="checkbox" name="required" value="${skill.id}"><span>${skill.name}</span></label>`).join('');}
-function renderGear(){currentSkillsBox.innerHTML=SKILLS.map(skill=>{const value=DEFAULT_GEAR[skill.id]||'none';return `<div class="gear-row"><div class="gear-name">${skill.name}</div><div class="gear-controls">${[['none','未習得'],['prototype','試作済み'],['deliverable','納品可能'],['real','実案件済み']].map(([id,label])=>`<label><input type="radio" name="gear-${skill.id}" value="${id}" ${value===id?'checked':''}>${label}</label>`).join('')}</div></div>`;}).join('');}
+function loadGearLevels(){
+  try{const data=JSON.parse(localStorage.getItem(GEAR_STORE_KEY)||'{}');return data&&typeof data==='object'&&!Array.isArray(data)?data:{};}
+  catch(error){return {};}
+}
+function saveGearLevels(){
+  const levels={};
+  currentSkillsBox.querySelectorAll('input[type="radio"]:checked').forEach(input=>{
+    const id=input.name.replace(/^gear-/,'');
+    if(SKILLS.some(skill=>skill.id===id))levels[id]=input.value;
+  });
+  try{localStorage.setItem(GEAR_STORE_KEY,JSON.stringify(levels));}
+  catch(error){ /* Settings still work for this page even when storage is unavailable. */ }
+}
+function renderGear(clear=false){
+  const saved=clear?{}:loadGearLevels();
+  const options=[['unassessed','未判定'],['none','未習得'],['prototype','試作済み'],['deliverable','納品可能'],['real','実案件済み']];
+  currentSkillsBox.innerHTML=SKILLS.map(skill=>{
+    const value=options.some(([id])=>id===saved[skill.id])?saved[skill.id]:'unassessed';
+    return `<div class="gear-row"><div class="gear-name">${skill.name}</div><div class="gear-controls">${options.map(([id,label])=>`<label><input type="radio" name="gear-${skill.id}" value="${id}" ${value===id?'checked':''}>${label}</label>`).join('')}</div></div>`;
+  }).join('');
+}
 function checkedRequired(){return [...document.querySelectorAll('input[name="required"]:checked')].map(input=>input.value);}
-function gearStatus(id){return document.querySelector(`input[name="gear-${id}"]:checked`)?.value||'none';}
+function gearStatus(id){return document.querySelector(`input[name="gear-${id}"]:checked`)?.value||'unassessed';}
 function skillName(id){return SKILLS.find(skill=>skill.id===id)?.name||id;}
-function statusLabel(status){return {none:'未習得',prototype:'試作済み',deliverable:'納品可能',real:'実案件済み'}[status]||status;}
+function statusLabel(status){return {unassessed:'未判定',none:'未習得',prototype:'試作済み',deliverable:'納品可能',real:'実案件済み'}[status]||status;}
 function setRequired(ids){document.querySelectorAll('input[name="required"]').forEach(input=>input.checked=ids.includes(input.value));}
 function suggestSkills(){const text=sourceText.value.toLowerCase();setRequired([...new Set(SKILLS.filter(skill=>skill.keywords.some(keyword=>text.includes(keyword.toLowerCase()))).map(skill=>skill.id))]);}
 function classify(text,required,missing){const value=text.toLowerCase();if(['講座','スクール','受講料','教材'].some(word=>value.includes(word)))return['学習入口','仕事ではなく、学ぶ・買う・参加する入口が強い。成果物が残るか確認。'];if(['報酬なし','無償'].some(word=>value.includes(word))&&['github','ポートフォリオ','共同制作'].some(word=>value.includes(word)))return['実績作り入口','即報酬より、公開できる成果物や経験を作る入口。'];if(['報酬','納期','納品','修正'].some(word=>value.includes(word))||required.includes('github'))return['仕事入口','作業・納品・報酬の形が見える。足りない技術を埋めれば案件化しやすい。'];if(['discord','コミュニティ','勉強会','メンバー'].some(word=>value.includes(word)))return['コミュニティ入口','人や現場へ接続する入口。仕事化するには成果物を固定する。'];if(!required.length&&!missing.length)return['情報不足','必要技術がまだ選ばれていない。募集文を読み、作業に必要なものを選ぶ段階。'];return['入口混合','仕事・学習・実績作りが混ざっている可能性がある。得るものと消費するものを分ける。'];}
@@ -233,9 +255,18 @@ function prepareInstructionFields(text,required){
 }
 const guideOnlyPatterns=[/^募集文を確認し、?担当する作業範囲を記入する[。.]?$/, /^依頼主へ渡す成果物と納品形式を確認して記入する[。.]?$/, /^募集要件と納品形式を満たしていること[。.]?$/, /^(確認する|記入する|決める|整理する)[。.]?$/, /^納品形式を確認する[。.]?$/, /^担当範囲を記入する[。.]?$/];
 function usableCaseText(value){const text=String(value||'').trim();return Boolean(text)&&text!=='未確定'&&text!=='記載なし'&&!guideOnlyPatterns.some(pattern=>pattern.test(text));}
-function concreteWork(value){const text=String(value||'').trim();return usableCaseText(text)&&/(修正|作成|制作|実装|編集|校正|リライト|設置|追加|削除|変更|調整|構築|デザイン|コーディング|更新|入力|調査|撮影|翻訳|執筆)/.test(text);}
-function concreteDeliverable(value){const text=String(value||'').trim();return usableCaseText(text)&&/(ファイル|HTML|CSS|JavaScript|URL|画像|記事|PDF|データ|コード|ページ|サイト|文書|説明|動画|資料|成果物|原稿|レポート|デザイン)/i.test(text);}
-function concreteCheck(value){const text=String(value||'').trim();return usableCaseText(text)&&/(ない|できる|表示|動作|タップ|クリック|崩れ|一致|完了|エラー|読める|満たして|確認できる|再生|送信|保存)/.test(text);}
+
+function unresolvedCaseValue(value,kind){
+  const text=String(value||'').trim();
+  if(/未定|未確定|未確認|未記載|不明|調整中|相談中|検討中|未受領|未提供|未支給|決まっていない|決めていない|わからない|分からない|確認して記入|後で決める|あとで決める/.test(text))return true;
+  if(kind==='work')return /(修正|制作|作成|実装|編集|更新|入力|翻訳|調査|撮影|執筆|校正|作業|対応)(?:は|を|が)?(?:しない|できない|出来ない|行わない|不可|不要)/.test(text);
+  if(kind==='deliverable')return /(?:納品|提出|成果物|ファイル).{0,16}(?:できない|出来ない|しない|渡せない|提出できない|不可|不要)|(?:できない|出来ない|しない).{0,8}(?:納品|提出)/.test(text);
+  if(kind==='check')return /(検査|検品|確認|チェック|判定)(?:は|を|が)?(?:しない|できない|出来ない|行わない|不可|不要)/.test(text);
+  return false;
+}
+function concreteWork(value){const text=String(value||'').trim();return usableCaseText(text)&&!unresolvedCaseValue(text,'work')&&/(修正|作成|制作|実装|編集|校正|リライト|設置|追加|削除|変更|調整|構築|デザイン|コーディング|更新|入力|調査|撮影|翻訳|執筆)/.test(text);}
+function concreteDeliverable(value){const text=String(value||'').trim();return usableCaseText(text)&&!unresolvedCaseValue(text,'deliverable')&&/(ファイル|HTML|CSS|JavaScript|URL|画像|記事|PDF|データ|コード|ページ|サイト|文書|説明|動画|資料|成果物|原稿|レポート|デザイン)/i.test(text);}
+function concreteCheck(value){const text=String(value||'').trim();return usableCaseText(text)&&!unresolvedCaseValue(text,'check')&&/(ない|できる|表示|動作|タップ|クリック|崩れ|一致|完了|エラー|読める|満たして|確認できる|再生|送信|保存)/.test(text);}
 function assessCaseCard(){
   const work=workContent.value.trim(),deliverable=deliverables.value.trim(),checks=checkCriteria.value.trim(),questions=clientQuestions.value.trim();
   const workOk=concreteWork(work),deliverableOk=concreteDeliverable(deliverable),checkOk=concreteCheck(checks),questionsRemain=Boolean(questions)&&questions!=='なし',permissionOk=productionPermission.checked;
@@ -255,7 +286,7 @@ function assessCaseCard(){
   if(questionsRemain&&!unknown.length)unknown.push('依頼主への確認事項');
   if(!permissionOk)unknown.push('制作許可');
   const ready=workOk&&deliverableOk&&checkOk&&permissionOk&&!questionsRemain;
-  return {state:ready?'制作可能':'確認中',work:workOk?work:'未確定',deliverable:deliverableOk?deliverable:'未確定',checks:checkOk?checks:'未確定',questions:questions||(ready?'なし':'制作開始前に、未確定事項を依頼主へ確認してください。'),unknown:ready?'なし':[...new Set(unknown)].map(item=>`・${item}`).join('\n'),nextAction:ready?'装備庫で案件カードを貼り、今日やる作業と納品情報を整理する。':'依頼主へ未確定事項を確認し、回答後に案件カードを更新する。'};
+  return {state:ready?'制作可能':'確認中',work:workOk?work:'未確定',deliverable:deliverableOk?deliverable:'未確定',checks:checkOk?checks:'未確定',questions:ready?'なし':(questions&&questions!=='なし'?questions:'制作開始前に、未確定事項を依頼主へ確認してください。'),unknown:ready?'なし':[...new Set(unknown)].map(item=>`・${item}`).join('\n'),nextAction:ready?'装備庫で案件カードを貼り、今日やる作業と納品情報を整理する。':'依頼主へ未確定事項を確認し、回答後に案件カードを更新する。'};
 }
 function updateCaseStatePreview(){const a=assessCaseCard();caseStatePreview.classList.toggle('ready',a.state==='制作可能');caseStatePreview.classList.toggle('checking',a.state!=='制作可能');caseStatePreview.querySelector('strong').textContent=a.state;caseStatePreview.querySelector('p').textContent=a.state==='制作可能'?'具体的な指示と制作許可がそろっています。':'未確定事項の確認作業だけを行い、実制作へ進まないでください。';}
 function invalidateCaseCard(){caseCard.value='';cardValidation.classList.add('hidden');copyStatus.textContent='';handoffStatus.textContent='';humanResult.classList.add('hidden');equipmentLink.classList.add('hidden');internalCardDetails.open=false;}
@@ -345,7 +376,7 @@ function generateCaseCard(){
 }
 function analyze(){
   const text=sourceText.value.trim(),required=checkedRequired(),matched=[],missing=[];
-  required.forEach(id=>{const status=gearStatus(id);if(status==='none')missing.push(id);else matched.push(`${skillName(id)}｜${statusLabel(status)}`);});
+  required.forEach(id=>{const status=gearStatus(id);if(status==='none'||status==='unassessed')missing.push(id);else matched.push(`${skillName(id)}｜${statusLabel(status)}`);});
   const [type,summary]=classify(text,required,missing),mission=pickMission(missing);
   let distance='今できる';if(missing.length===1)distance='一つ学べばできる';if(missing.length>=2&&matched.length)distance='一部だけできる';if(missing.length>=4)distance='現在は距離がある';
   entryType.textContent=`${type}｜${distance}`;entrySummary.textContent=summary;
@@ -367,7 +398,11 @@ jobMemoForm.addEventListener('submit',(event)=>{event.preventDefault();const tex
 wizardMemoFields.forEach(field=>field.addEventListener('input',refreshSourceFromMemo));
 $('#sampleBtn').addEventListener('click',()=>{const sample=SAMPLES[sampleIndex%SAMPLES.length];sampleIndex++;const bodyField=wizardMemoFields.find(field=>field.dataset.memoKey==='body');if(bodyField)bodyField.value=sample;refreshSourceFromMemo();suggestSkills();});
 $('#step1SuggestBtn').addEventListener('click',()=>{refreshSourceFromMemo();suggestSkills();});
-$('#suggestBtn').addEventListener('click',suggestSkills);$('#resetGearBtn').addEventListener('click',renderGear);$('#analyzeBtn').addEventListener('click',analyze);
+$('#suggestBtn').addEventListener('click',suggestSkills);currentSkillsBox.addEventListener('change',event=>{if(event.target?.matches('input[type="radio"]'))saveGearLevels();});
+$('#resetGearBtn').addEventListener('click',()=>{
+  try{localStorage.removeItem(GEAR_STORE_KEY);}catch(error){}
+  renderGear(true);
+});$('#analyzeBtn').addEventListener('click',analyze);
 $('#generateCardBtn').addEventListener('click',generateCaseCard);
 document.querySelectorAll('[data-next-step]').forEach(button=>button.addEventListener('click',()=>{
   const next=Number(button.dataset.nextStep);
@@ -503,6 +538,21 @@ $('#practiceReturnToOriginalBtn').addEventListener('click',()=>{
   if(!practiceActive)return;
   document.body.dataset.practicePhase='read';
   $('#practiceOriginal').scrollIntoView({behavior:'instant',block:'start'});
+});
+$('#clearLocalDataBtn').addEventListener('click',()=>{
+  if(!window.confirm('この端末に保存した募集メモと技術設定を削除しますか？ 他のアプリの保存情報は消しません。'))return;
+  if(practiceActive)finishPractice();
+  let removed=true;
+  try{
+    localStorage.removeItem(MEMO_STORE_KEY);
+    localStorage.removeItem(GEAR_STORE_KEY);
+  }catch(error){removed=false;}
+  jobMemoForm.reset();
+  syncWizardMemoFromMain();
+  sourceText.value='';
+  renderGear(true);
+  $('#resetBtn').click();
+  memoStatus.textContent=removed?'この端末の募集メモと技術設定を削除しました。':'画面を初期化しましたが、端末保存の削除は確認できませんでした。';
 });
 $('#startPracticeBtn').addEventListener('click',startPractice);
 $('#stopPracticeBtn').addEventListener('click',finishPractice);
