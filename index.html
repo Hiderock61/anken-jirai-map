@@ -15,6 +15,18 @@
       <p class="lead">募集を探す場所と検索語を持ち、見つけた募集を技能差分と「次に学ぶ一つ」へ渡す司令台。</p>
     </header>
 
+    <section class="card first-run" aria-labelledby="firstRunTitle">
+      <p class="step">📱 iPhoneから使う</p>
+      <h2 id="firstRunTitle">まず仕事を1件、入口から装備庫へ</h2>
+      <p class="small-note">どちらかを選ぶだけ。<strong>架空の練習は本当の仕事や受注にはなりません。</strong> 保存済みの募集メモは練習で上書きしません。</p>
+      <div class="first-run-actions">
+        <button id="startPracticeBtn" class="main-btn" type="button">🧪 架空の仕事で一通り試す</button>
+        <button id="startRealBtn" class="sub-btn" type="button">📋 本物の募集を整理する</button>
+      </div>
+      <p id="firstRunStatus" class="small-note status-line" role="status" aria-live="polite">練習の場合は「確認中」のカードを作り、装備庫へ手動コピーします。</p>
+      <button id="stopPracticeTopBtn" class="sub-btn hidden" type="button">練習を終了して自分の募集メモに戻る</button>
+    </section>
+
     <nav class="tab-bar" aria-label="入口アプリの機能">
       <button class="tab-btn active" type="button" data-tab="search" aria-selected="true">🔎 探す</button>
       <button class="tab-btn" type="button" data-tab="analyze" aria-selected="false">🧭 分解する</button>
@@ -157,6 +169,11 @@
         </section>
         <section class="next-box"><h3>次の行動</h3><p id="nextAction"></p></section>
         <p class="required-heading-note">入力した内容から、装備庫へ渡す仕事情報と人間向けの説明を作ります。</p>
+        <div id="practiceBanner" class="practice-banner hidden" role="status">
+          <strong>🧪 練習中：これは架空の案件です。</strong>
+          <p>制作許可は未確認なので「確認中」。下で「この仕事を装備庫へ持っていく」→ コピー → 装備庫に貼る。実際の応募や制作はしません。</p>
+          <button id="stopPracticeBtn" class="sub-btn" type="button">練習終了・元の募集メモへ戻る</button>
+        </div>
         <button id="generateCardBtn" class="main-btn create-card-btn" type="button">この仕事の判定結果を作る</button>
         <p id="cardStatus" class="small-note status-line" aria-live="polite"></p>
 
@@ -215,7 +232,7 @@
       <button id="closeFallbackBtn" class="main-btn" type="button">閉じる</button>
     </div>
   </div>
-  <script src="app.js?v=04g-safe1101b"></script>
+  <script src="app.js?v=04g-usable1101"></script>
   <script src="mobile-ui.js"></script>
 </body>
 </html>
