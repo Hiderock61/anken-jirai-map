@@ -22,3 +22,16 @@ button,input,textarea{font:inherit}.app-shell{width:min(960px,100%);margin:0 aut
 body.analyze-mode .tab-bar{padding:4px;gap:5px;border-radius:14px;margin-bottom:9px}body.analyze-mode .tab-btn{min-height:38px;border-radius:10px;font-size:.88rem}body.analyze-mode .hero{padding-bottom:10px}body.analyze-mode .step-location{top:55px;padding:9px 11px;border-radius:14px}body.analyze-mode .step-location p:first-child{font-size:.82rem;margin-bottom:4px}body.analyze-mode .step-progress span{height:4px}
 body.has-fixed-step-nav .wizard-step:not(.hidden){padding-bottom:115px}body.has-fixed-step-nav .wizard-step:not(.hidden)>.step-actions{position:fixed;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));bottom:0;z-index:24;display:grid;grid-template-columns:minmax(86px,.42fr) minmax(0,1fr);gap:9px;margin:0;padding:10px 10px calc(10px + env(safe-area-inset-bottom));background:rgba(2,6,23,.96);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;box-shadow:0 -12px 36px rgba(0,0,0,.42);backdrop-filter:blur(16px)}body.has-fixed-step-nav .wizard-step:not(.hidden)>.step-actions.single-action{grid-template-columns:1fr}body.has-fixed-step-nav .wizard-step:not(.hidden)>.step-actions .sub-btn{order:0;min-height:48px}body.has-fixed-step-nav .wizard-step:not(.hidden)>.step-actions .main-btn{min-height:48px;font-size:.93rem;padding:11px 12px}body.keyboard-open .wizard-step:not(.hidden)>.step-actions{display:none}body.keyboard-open .wizard-step textarea,body.keyboard-open .wizard-step input{scroll-margin-bottom:40px}
 @media(max-width:640px){body.analyze-mode .app-shell{padding-top:8px;padding-bottom:calc(150px + env(safe-area-inset-bottom))}body.analyze-mode .hero h1{font-size:2.1rem}body.analyze-mode .hero .lead{font-size:.9rem;line-height:1.55}body.analyze-mode .hero .version{font-size:.68rem}.compact-skill-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.compact-skill-grid .skill-chip{min-width:0}.compact-skill-grid .skill-chip span{overflow-wrap:anywhere}.wizard-step{margin-top:10px}.wizard-step .section-head{margin-bottom:8px}.wizard-step .small-note{margin:5px 0 10px;line-height:1.5}.wizard-step h2{font-size:1.18rem}.gear-row{padding:10px}.gear-controls label{padding:7px 4px}.map-card{display:none}body[data-wizard-step="2"] .wizard-step:not(.hidden){padding-top:13px}}
+
+
+/* 2026-11-01 iPhone first-run usability; scoped to new elements only. */
+.first-run{border:2px solid rgba(56,189,248,.55);background:linear-gradient(145deg,rgba(12,38,64,.95),rgba(17,24,39,.98));}
+.first-run h2{margin:0 0 10px;font-size:clamp(1.3rem,4.5vw,1.7rem);line-height:1.4;}
+.first-run .small-note{line-height:1.7;}
+.first-run-actions{display:grid;grid-template-columns:1fr;gap:12px;margin:15px 0;}
+.first-run-actions button,.first-run #stopPracticeTopBtn{width:100%;min-height:55px;white-space:normal;line-height:1.35;padding:12px;}
+.first-run #startRealBtn{background:transparent;color:#fff;border:1.5px solid #7dd3fc;}
+.practice-banner{margin:14px 0 20px;border:2px solid #fbbf24;border-radius:16px;padding:16px;background:#443113;color:#fff7ed;}
+.practice-banner p{margin:10px 0 15px;line-height:1.75;}
+.practice-banner button{width:100%;min-height:48px;background:transparent;color:#fff;border:1px solid #ffcf6b;}
+@media(min-width:680px){.first-run-actions{grid-template-columns:1fr 1fr;}}
