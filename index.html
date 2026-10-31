@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
   <title>入口アプリ v0.4G</title>
-  <link rel="stylesheet" href="style.css?v=04g-original1101">
+  <link rel="stylesheet" href="style.css?v=04g-reader1101">
 </head>
 <body>
   <main class="app-shell">
@@ -26,6 +26,16 @@
       <p id="firstRunStatus" class="small-note status-line" role="status" aria-live="polite">練習では「まだ確認が必要」という結果を作り、次の画面で確認する操作を試せます。</p>
       <button id="stopPracticeTopBtn" class="sub-btn hidden" type="button">練習を終了して自分の募集メモに戻る</button>
     </section>
+
+        <section id="practiceOriginal" class="practice-original hidden" aria-labelledby="practiceOriginalHeading">
+          <p class="practice-original-eyebrow">🧪 練習の第1画面｜依頼文を読む</p>
+          <h3 id="practiceOriginalHeading">まず、この依頼を読んでみよう</h3>
+          <p id="practiceOriginalTitle" class="practice-original-title"></p>
+          <p id="practiceOriginalMeta" class="practice-original-meta"></p>
+          <div id="practiceOriginalText" class="practice-original-message"></div>
+          <p class="practice-original-caption">ここまでが架空の募集文です。この文章を読んでから、下のボタンで整理結果へ進みます。実際の依頼・契約ではありません。</p>
+          <button id="practiceReadResultBtn" class="main-btn practice-continue" type="button">依頼文を読んだ → 整理結果を見る</button>
+        </section>
 
     <nav class="tab-bar" aria-label="入口アプリの機能">
       <button class="tab-btn active" type="button" data-tab="search" aria-selected="true">🔎 探す</button>
@@ -147,14 +157,7 @@
       <section class="card wizard-step hidden" data-wizard-step="5">
         <p class="step">STEP 5 / 5</p>
         <h2>この仕事の現在地を確認する</h2>
-        <section id="practiceOriginal" class="practice-original hidden" aria-labelledby="practiceOriginalHeading">
-          <p class="practice-original-eyebrow">🧪 STEP 0｜アプリに渡した架空の依頼文</p>
-          <h3 id="practiceOriginalHeading">まず、この依頼を読んでみよう</h3>
-          <p id="practiceOriginalTitle" class="practice-original-title"></p>
-          <p id="practiceOriginalMeta" class="practice-original-meta"></p>
-          <div id="practiceOriginalText" class="practice-original-message"></div>
-          <p class="practice-original-caption">ここまでが入力した募集文です。この下はアプリによる整理結果です。実際の依頼・契約ではありません。</p>
-        </section>
+        <button id="practiceReturnToOriginalBtn" class="sub-btn hidden practice-review" type="button">← 架空の依頼文をもう一度読む</button>
         <div id="caseStatePreview" class="case-state-preview checking"><span>カード状態</span><strong>確認中</strong><p>制作許可と未確定事項を確認してください。</p></div>
         <div class="primary-result">
           <p class="result-label">入口タイプ・到達判定</p>
@@ -241,7 +244,7 @@
       <button id="closeFallbackBtn" class="main-btn" type="button">閉じる</button>
     </div>
   </div>
-  <script src="app.js?v=04g-original1101b"></script>
+  <script src="app.js?v=04g-reader1101"></script>
   <script src="mobile-ui.js"></script>
 </body>
 </html>
