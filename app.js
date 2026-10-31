@@ -298,6 +298,7 @@ function generateCaseCard(){
   caseCard.value=[
     '【案件カード】','',
     '【カード状態】',state.state,'',
+    '【制作開始許可】',productionPermission.checked?'確認済み':'未確認','',
     '【案件名】',valueOrFallback(a.title,'募集タイトル未記入'),'',
     '【入口タイプ】',a.type,'',
     '【作業内容】',state.work,'',
