@@ -376,12 +376,14 @@ async function copyCaseCard(statusTarget){
   }
   if(!copied){
     internalCardDetails.open=true;
-    equipmentLink.classList.add('hidden');
-    statusTarget.textContent='自動コピーできません。開いた内部カード欄の文章を長押しして手動コピーしてください。';
+    equipmentLink.classList.remove('hidden');
+    equipmentLink.textContent='手動コピーができたら装備庫を開く';
+    statusTarget.textContent='自動コピーできません。開いた内部カード欄の文章を長押ししてコピーし、その後で装備庫を開いて貼ってください。まだコピーは完了していません。';
     caseCard.focus();caseCard.select();
     return false;
   }
   statusTarget.textContent='この仕事情報をコピーしました。次に装備庫を開き、白い欄へ貼ってください。';
+  equipmentLink.textContent='次にフリーランス装備庫を開く';
   equipmentLink.classList.remove('hidden');
   return true;
 }
