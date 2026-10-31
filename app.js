@@ -404,7 +404,21 @@ async function copyCaseCard(statusTarget){
   equipmentLink.classList.remove('hidden');
   return true;
 }
-$('#handoffJobBtn').addEventListener('click',()=>copyCaseCard(handoffStatus));
+async function copyAndOpenCheckingTool(){
+  // Navigate only after the clipboard has actually reported success.
+  const copied=await copyCaseCard(handoffStatus);
+  if(!copied)return false;
+  try{
+    window.location.assign(equipmentLink.href);
+    return true;
+  }catch(error){
+    // Some embedded browsers may refuse a navigation. Keep the original card and fallback link.
+    handoffStatus.textContent='コピーはできましたが、次の画面を自動で開けませんでした。下のリンクから「仕事の確認ツール」を開いてください。';
+    equipmentLink.classList.remove('hidden');
+    return false;
+  }
+}
+$('#handoffJobBtn').addEventListener('click',copyAndOpenCheckingTool);
 $('#copyCardBtn').addEventListener('click',()=>copyCaseCard(copyStatus));
 
 // iPhoneの最短体験。現物の案件・契約許可や元の下書きには触れずに受渡しを練習。
