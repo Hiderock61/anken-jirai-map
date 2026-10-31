@@ -117,3 +117,15 @@ GitHub施工：[ソース修正](https://github.com/Hiderock61/anken-jirai-map/c
 - Work/TinyFish、実顧客の自動応募、AI自動送信、受注確定、端末外の保存はしない。公開GitHub Pages配信と本人iPhone操作は未検証。
 - 検査：制作許可を自動ONにしない処理6/6、練習開始/終了・元の7項目復帰9/9、最新2アプリの参照/構文/架空カード20/20を局所PASS。これはブラウザE2Eの代用ではない。
 
+
+
+## 2026-11-01｜黄色ボタンを1回でコピー＋確認画面に移動（iPhone導線）
+
+- 本人がiPhoneでSTEP5の黄色ボタンを押しても次画面へ進まなかったため、以前の「コピーだけ」から**コピー成功時に同じタブで確認ツールへ自動移動**する動作へ変更した。
+- 黄色ボタンは「仕事情報をコピーして確認画面を開く」。内部処理は `await copyCaseCard(handoffStatus)` の結果が真のときに限り `window.location.assign(equipmentLink.href)` を実行。移動先は既存の `https://hiderock61.github.io/freelance-/#card-intake`。
+- コピー失敗時は勝手に移動しない。従来の長押し／手動コピー欄とリンクを維持。コピー成功後にブラウザが遷移を拒否したときも、情報を維持して手動リンクを出す。
+- 詳細にある「仕事情報をコピー」ボタンはコピーのみのまま。案件カード生成・許可判定・未確定事項は変更していない。
+- 実際のコピーは次画面の白い入力欄に本人がペーストする必要がある。自動ペースト・自動応募・外部送信は追加していない。
+- モックでコピー成功／拒否／旧方式成功／画面遷移拒否／空カードなど **13/13 PASS**。GitHub最新ソースの4アプリ公開検収機モック **4/4 PASS**。iPhone実機での新しいボタン操作は未検収。
+- 反映ソース：[app.js](https://github.com/Hiderock61/anken-jirai-map/blob/main/app.js) 、[index.html](https://github.com/Hiderock61/anken-jirai-map/blob/main/index.html)。HTMLのJS識別子は `04g-oneclick1101`。
+
