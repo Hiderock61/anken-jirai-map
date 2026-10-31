@@ -129,3 +129,13 @@ GitHub施工：[ソース修正](https://github.com/Hiderock61/anken-jirai-map/c
 - モックでコピー成功／拒否／旧方式成功／画面遷移拒否／空カードなど **13/13 PASS**。GitHub最新ソースの4アプリ公開検収機モック **4/4 PASS**。iPhone実機での新しいボタン操作は未検収。
 - 反映ソース：[app.js](https://github.com/Hiderock61/anken-jirai-map/blob/main/app.js) 、[index.html](https://github.com/Hiderock61/anken-jirai-map/blob/main/index.html)。HTMLのJS識別子は `04g-oneclick1101`。
 
+
+
+## 2026-11-01｜架空の依頼文を最初の独立画面に分離
+
+- ユーザーのiPhone画像で、依頼文の末尾は画面上端に見えるが中心がSTEP5の「分解結果」から始まる現象が再発。先行版はSTEP5内の原文へスクロールするだけで、ブラウザの表示位置によって結果へ進んでしまう余地があった。
+- 新版では `#practiceOriginal` を分析タブの外、初回ボタン直下へ移動。練習開始時 `document.body.dataset.practicePhase="read"` とし、CSSでタブ・分解画面を明示的に非表示にする。つまり原文を読んでいる間、STEP5がスクロールで現れない。
+- 原文カード内の「依頼文を読んだ → 整理結果を見る」で初めて `practicePhase="result"` にし、分析タブのSTEP5を表示。結果側の「← 架空の依頼文をもう一度読む」から戻れる。練習終了で表示モードをクリアし、元の本人用募集メモも復元。実案件への表示影響は避ける。
+- 既存の案件カード生成、コピー成功時の自動遷移、許可未確認での制作停止は変更なし。
+- GitHub施工：`index.html`／`app.js`／`style.css`。iPhoneキャッシュ識別子はJS `04g-reader1101`、CSS `04g-reader1101`。本館検収機の期待値も更新。
+- 実関数と模擬DOMによる19/19 PASS（初期原文、結果未表示、手動で結果表示、原文へ復帰、練習終了後のメモ復元等）。4アプリ現行ファイルの模擬配信は4/4 PASS。公開PagesのLIVE HTTP・本人iPhone実画面は未検収。
