@@ -220,8 +220,9 @@ function prepareInstructionFields(text,required){
   deliverables.value=extracted.deliverable;
   clientQuestions.value=extracted.questions.length?extracted.questions.join('\n'):'なし';
   checkCriteria.value=extracted.checks;
-  productionPermission.checked=extracted.permission;
-  const facts=[extracted.material&&`素材：${extracted.material}`,extracted.revision&&`修正回数：${extracted.revision}`,extracted.permission&&'制作開始許可：あり'].filter(Boolean);
+  // 募集文は本人による許可確認の代わりにならない。新しい案件解析では必ず未確認から始める。
+  productionPermission.checked=false;
+  const facts=[extracted.material&&`素材：${extracted.material}`,extracted.revision&&`修正回数：${extracted.revision}`,extracted.permission&&'本文に許可らしい記述あり（本人による再確認が必要）'].filter(Boolean);
   extractedFactsList.innerHTML=facts.map(item=>`<li>${escapeHtml(item)}</li>`).join('');
   extractedFacts.classList.toggle('hidden',!facts.length);
   return extracted;
@@ -266,7 +267,7 @@ function renderHumanResult(a,state){
     ['納品物',state.deliverable],
     ['素材',a.extracted?.material||'未確定'],
     ['修正回数',a.extracted?.revision||'未確定'],
-    ['制作開始許可',a.extracted?.permission?'あり':'未確認'],
+    ['制作開始許可',productionPermission.checked?'本人確認済み':'未確認'],
     ['必要そうな技術',a.required.length?a.required.map(skillName).join('、'):'未選択'],
     ['今使える装備',a.matched.length?a.matched.join('、'):'なし'],
     ['不足技術',a.missing.length?a.missing.map(skillName).join('、'):'なし'],
