@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
   <title>入口アプリ v0.4G</title>
-  <link rel="stylesheet" href="style.css?v=04g-reader1101">
+  <link rel="stylesheet" href="style.css?v=04g-beta-safe1101a">
 </head>
 <body>
   <main class="app-shell">
@@ -82,6 +82,8 @@
           <button id="handoffBtn" class="main-btn" type="submit">この募集を分解する</button>
           <p id="memoStatus" class="small-note status-line" aria-live="polite"></p>
         </form>
+        <button id="clearLocalDataBtn" class="sub-btn" type="button">この端末の募集メモ・技術設定を削除</button>
+        <p class="small-note">このアプリが保存した2種類の情報だけを削除します。ほかのアプリには触れません。</p>
       </section>
     </section>
 
@@ -127,7 +129,7 @@
           <div><p class="step">STEP 3 / 5</p><h2>自分が使える技術を確認する</h2></div>
           <button id="resetGearBtn" class="sub-btn" type="button">初期設定に戻す</button>
         </div>
-        <p class="small-note">動画を見ただけは装備にしない。動くものを作ったら「試作済み」、人に渡せるなら「納品可能」。</p>
+        <p class="small-note">初期値はすべて「未判定」です。自分の経験に合わせて選ぶと、この端末に保存します。動画を見ただけなら「試作済み」にしないでください。</p>
         <div id="currentSkills" class="gear-list"></div>
         <div class="step-actions"><button class="sub-btn step-back" type="button" data-back-step="2">戻る</button><button id="analyzeBtn" class="main-btn" type="button">次へ：作業内容を確認</button></div>
       </section>
@@ -244,7 +246,7 @@
       <button id="closeFallbackBtn" class="main-btn" type="button">閉じる</button>
     </div>
   </div>
-  <script src="app.js?v=04g-reader1101"></script>
+  <script src="app.js?v=04g-beta-safe1101a"></script>
   <script src="mobile-ui.js"></script>
 </body>
 </html>
