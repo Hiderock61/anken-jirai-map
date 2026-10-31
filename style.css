@@ -46,3 +46,16 @@ body.has-fixed-step-nav .wizard-step:not(.hidden){padding-bottom:115px}body.has-
 .practice-original-message{padding:16px;border-radius:13px;background:#f8fbff;color:#152335;font-size:16px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;}
 .practice-original-caption{font-size:13px;color:#c9e9ff;line-height:1.8;margin:13px 0 0;}
 @media(max-width:450px){.practice-original{padding:15px 12px;}.practice-original-message{padding:14px;font-size:16px;}}
+
+
+/* iPhone beta: original client brief is a separate, explicit first screen. */
+body[data-practice-phase="read"] .tab-bar,
+body[data-practice-phase="read"] #analyzeTab,
+body[data-practice-phase="read"] #searchTab{display:none !important;}
+body[data-practice-phase="result"] #practiceOriginal{display:none !important;}
+.practice-original{scroll-margin-top:14px;}
+.practice-original .practice-continue{width:100%;min-height:62px;white-space:normal;line-height:1.5;margin-top:20px;background:#facc15;color:#171d2b;}
+.practice-review{width:100%;white-space:normal;line-height:1.4;margin:10px 0 14px;min-height:47px;}
+body[data-practice-phase="read"] .first-run{padding-bottom:12px;}
+body[data-practice-phase="read"] #practiceOriginal{margin-top:8px;}
+body[data-practice-phase="result"] #stepLocation{scroll-margin-top:15px;}
