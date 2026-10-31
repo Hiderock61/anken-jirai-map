@@ -291,11 +291,18 @@ function renderHumanResult(a,state){
   handoffStatus.textContent='';
   equipmentLink.classList.add('hidden');
 }
+function safeCardValue(value){
+  return String(value??'').replace(/\r\n?/g,'\n').split('\n').map(line=>{
+    const t=line.trim();
+    const heading=/^【[^】\n]+】$/.test(t)||/^(?:■\s*)?(?:【|\[)?[^:：\n]+(?:】|\])?\s*[：:]\s*$/.test(t);
+    return heading?'（入力見出し：'+line+'）':line;
+  }).join('\n');
+}
 function generateCaseCard(){
   if(!latestAnalysis){cardStatus.textContent='先に技能差分を出してください。';return;}
   const a=latestAnalysis;
   const state=assessCaseCard();
-  caseCard.value=[
+  const cardParts=[
     '【案件カード】','',
     '【カード状態】',state.state,'',
     '【制作開始許可】',productionPermission.checked?'確認済み':'未確認','',
@@ -317,7 +324,12 @@ function generateCaseCard(){
     '【今使える装備】',a.matched.length?a.matched.join('、'):'なし','',
     '【学習ミッションの完成条件】',a.mission.done.map(item=>`・${item}`).join('\n'),'',
     '【次の行動】',state.nextAction
-  ].join('\n');
+  ];
+  caseCard.value=cardParts.map((part,i)=>{
+    const prior=cardParts[i-1];
+    return typeof prior==='string'&&/^【[^】]+】$/.test(prior)&&prior!=='【案件カード】'
+      ?safeCardValue(part):part;
+  }).join('\n');
   nextAction.textContent=state.nextAction;updateCaseStatePreview();
   renderHumanResult(a,state);
   cardStatus.textContent=`判定結果を作りました。現在の状態：${state.state}`;
