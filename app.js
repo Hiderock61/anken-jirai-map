@@ -439,16 +439,38 @@ async function copyCaseCard(statusTarget){
   equipmentLink.classList.remove('hidden');
   return true;
 }
+// A one-use same-origin, same-tab handoff, independent of clipboard permissions.
+// No URL parameters or server requests. The receiving page consumes and deletes it.
+const BETA_HANDOFF_KEY='freelance-beta-handoff-v1';
+function stageBetaHandoff(card){
+  if(!card.trim())return false;
+  try{
+    sessionStorage.setItem(BETA_HANDOFF_KEY,JSON.stringify({
+      version:1,createdAt:Date.now(),card
+    }));
+    return true;
+  }catch(error){return false;}
+}
 async function copyAndOpenCheckingTool(){
-  // Navigate only after the clipboard has actually reported success.
+  if(!caseCard.value.trim()){
+    handoffStatus.textContent='先に判定結果を作ってください。';
+    return false;
+  }
+  const staged=stageBetaHandoff(caseCard.value);
+  // Clipboard remains useful for manual transfer, but it is not a prerequisite
+  // for navigating within our own origin.
   const copied=await copyCaseCard(handoffStatus);
-  if(!copied)return false;
+  if(!staged&&!copied)return false;
+  if(staged){
+    handoffStatus.textContent=copied
+      ? '次の画面へ仕事情報を受け渡します。コピーもできました。'
+      : 'クリップボードは使えませんでしたが、次の画面へ一時受け渡しします。';
+  }
   try{
     window.location.assign(equipmentLink.href);
     return true;
   }catch(error){
-    // Some embedded browsers may refuse a navigation. Keep the original card and fallback link.
-    handoffStatus.textContent='コピーはできましたが、次の画面を自動で開けませんでした。下のリンクから「仕事の確認ツール」を開いてください。';
+    handoffStatus.textContent='自動で次の画面を開けませんでした。下のリンクから開き、必要なら仕事情報を手動で貼ってください。';
     equipmentLink.classList.remove('hidden');
     return false;
   }
